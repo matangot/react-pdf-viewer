@@ -2,6 +2,7 @@
   "name": "@matangot/react-pdf-viewer",
   "version": "0.1.0",
   "license": "MIT",
+  "packageManager": "pnpm@8.8.0",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
