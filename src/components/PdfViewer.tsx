@@ -11,6 +11,7 @@ import { FullScreen } from './FullScreen';
 import { ThumbnailToggle } from './ThumbnailToggle';
 import { ThumbnailSidebar } from './ThumbnailSidebar';
 import { Pages } from './Pages';
+import { Page } from './Page';
 import type { PdfViewerProps } from '../types';
 
 export function PdfViewer(props: PdfViewerProps) {
@@ -53,3 +54,4 @@ PdfViewer.FullScreen = FullScreen;
 PdfViewer.ThumbnailToggle = ThumbnailToggle;
 PdfViewer.ThumbnailSidebar = ThumbnailSidebar;
 PdfViewer.Pages = Pages;
+PdfViewer.Page = Page;

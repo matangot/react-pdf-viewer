@@ -1,4 +1,4 @@
-import { useState, useCallback, type KeyboardEvent, type ChangeEvent } from 'react';
+import { useState, useEffect, useCallback, type KeyboardEvent, type ChangeEvent } from 'react';
 import { usePdfViewerContext } from '../context';
 
 export interface NavigationProps {
@@ -11,10 +11,9 @@ export function Navigation({ className }: NavigationProps) {
   const [inputValue, setInputValue] = useState(String(currentPage));
 
   // Keep input in sync when currentPage changes externally
-  const prevCurrentPage = useState(currentPage)[0];
-  if (prevCurrentPage !== currentPage) {
+  useEffect(() => {
     setInputValue(String(currentPage));
-  }
+  }, [currentPage]);
 
   const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);

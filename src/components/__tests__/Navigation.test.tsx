@@ -21,6 +21,7 @@ const mockContext = {
   zoomIn: vi.fn(),
   zoomOut: vi.fn(),
   zoomTo: vi.fn(),
+  _setZoomLevel: vi.fn(),
   rotate: vi.fn(),
   toggleThumbnails: vi.fn(),
   search: vi.fn(),
@@ -30,6 +31,7 @@ const mockContext = {
   download: vi.fn(),
   print: vi.fn(),
   toggleFullScreen: vi.fn(),
+  containerRef: { current: null },
 };
 
 vi.mock('../../context', () => ({

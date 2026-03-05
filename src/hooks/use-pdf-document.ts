@@ -10,16 +10,28 @@ export function usePdfDocument(
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const prevSrcRef = useRef<PdfSource | null>(null);
+  const objectUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (src === prevSrcRef.current) return;
     prevSrcRef.current = src;
 
+    // Revoke previous object URL if any
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+
     let cancelled = false;
     setIsLoading(true);
     setError(null);
 
-    const loadingTask = getDocument(getDocumentInit(src));
+    const init = getDocumentInit(src);
+    if (src instanceof File) {
+      objectUrlRef.current = init.url as string;
+    }
+
+    const loadingTask = getDocument(init);
 
     loadingTask.promise
       .then(async (doc) => {
@@ -46,6 +58,10 @@ export function usePdfDocument(
 
     return () => {
       cancelled = true;
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
     };
   }, [src]);
 
