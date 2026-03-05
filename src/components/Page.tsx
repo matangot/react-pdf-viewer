@@ -70,14 +70,18 @@ export function Page({ pageNumber, className }: PageProps) {
     }
   }, [document, pageNumber, zoomLevel, rotation]);
 
-  // Highlight search matches by adding classes directly to text layer spans
+  // Highlight search matches by wrapping matched substrings in <mark> elements
   const applyHighlights = useCallback(() => {
     const textLayer = textLayerRef.current;
     if (!textLayer) return;
 
-    // Clear previous highlights
-    textLayer.querySelectorAll('.pdf-viewer__search-hit').forEach((el) => {
-      el.classList.remove('pdf-viewer__search-hit', 'pdf-viewer__search-hit--current');
+    // Clear previous highlights — restore original text nodes
+    textLayer.querySelectorAll('mark.pdf-viewer__search-hit').forEach((mark) => {
+      const parent = mark.parentNode;
+      if (parent) {
+        parent.replaceChild(window.document.createTextNode(mark.textContent || ''), mark);
+        parent.normalize(); // merge adjacent text nodes
+      }
     });
 
     if (!searchQuery || searchMatches.length === 0) return;
@@ -86,23 +90,52 @@ export function Page({ pageNumber, className }: PageProps) {
     if (pageMatches.length === 0) return;
 
     const lowerQuery = searchQuery.toLowerCase();
+    const queryLen = searchQuery.length;
     const spans = Array.from(textLayer.querySelectorAll('span'));
 
     let pageMatchIdx = 0;
     for (const span of spans) {
-      const spanText = (span.textContent || '').toLowerCase();
-      if (spanText.includes(lowerQuery)) {
-        span.classList.add('pdf-viewer__search-hit');
+      const text = span.textContent || '';
+      const lowerText = text.toLowerCase();
+      let idx = lowerText.indexOf(lowerQuery);
+      if (idx === -1) continue;
+
+      // Build fragments: text before match, <mark>match</mark>, text after, repeat
+      const frag = window.document.createDocumentFragment();
+      let lastIdx = 0;
+
+      while (idx !== -1) {
+        // Text before match
+        if (idx > lastIdx) {
+          frag.appendChild(window.document.createTextNode(text.slice(lastIdx, idx)));
+        }
+
+        // The match itself
+        const mark = window.document.createElement('mark');
+        mark.className = 'pdf-viewer__search-hit';
+        mark.textContent = text.slice(idx, idx + queryLen);
 
         // Check if this is the current active match
         if (pageMatchIdx < pageMatches.length) {
           const globalIdx = searchMatches.indexOf(pageMatches[pageMatchIdx]);
           if (globalIdx === currentMatchIndex) {
-            span.classList.add('pdf-viewer__search-hit--current');
+            mark.classList.add('pdf-viewer__search-hit--current');
           }
         }
         pageMatchIdx++;
+
+        frag.appendChild(mark);
+        lastIdx = idx + queryLen;
+        idx = lowerText.indexOf(lowerQuery, lastIdx);
       }
+
+      // Remaining text after last match
+      if (lastIdx < text.length) {
+        frag.appendChild(window.document.createTextNode(text.slice(lastIdx)));
+      }
+
+      span.textContent = '';
+      span.appendChild(frag);
     }
   }, [searchQuery, searchMatches, currentMatchIndex, pageNumber]);
 
