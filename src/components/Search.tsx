@@ -19,7 +19,7 @@ export function Search({ className }: SearchProps) {
 
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const handleOpen = useCallback(() => {
     setOpen(true);
