@@ -383,6 +383,18 @@
   mix-blend-mode: multiply;
 }
 
+.pdf-viewer__highlight {
+  background: var(--pdf-search-highlight);
+  opacity: 0.4;
+  pointer-events: none;
+  border-radius: 2px;
+}
+
+.pdf-viewer__highlight--current {
+  background: #f97316;
+  opacity: 0.5;
+}
+
 .pdf-viewer__page-placeholder {
   width: 612px;
   height: 792px;

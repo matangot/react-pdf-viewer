@@ -13,6 +13,7 @@ export function ThumbnailSidebar({ className }: ThumbnailSidebarProps) {
   const [visibleThumbnails, setVisibleThumbnails] = useState<Set<number>>(new Set());
   const [renderedThumbnails, setRenderedThumbnails] = useState<Set<number>>(new Set());
   const canvasRefs = useRef<Map<number, HTMLCanvasElement>>(new Map());
+  const renderingPages = useRef<Set<number>>(new Set());
 
   const handleIntersection = useCallback(
     (entries: IntersectionObserverEntry[]) => {
@@ -49,22 +50,29 @@ export function ThumbnailSidebar({ className }: ThumbnailSidebarProps) {
     return () => observer.disconnect();
   }, [totalPages, isThumbnailsOpen, handleIntersection]);
 
-  // Render visible thumbnails
+  // Render visible thumbnails — one at a time to avoid pdf.js render races
   useEffect(() => {
     if (!document || !isThumbnailsOpen) return;
 
-    for (const pageNum of visibleThumbnails) {
-      if (renderedThumbnails.has(pageNum)) continue;
+    let cancelled = false;
 
-      const canvas = canvasRefs.current.get(pageNum);
-      if (!canvas) continue;
+    async function renderQueue() {
+      for (const pageNum of visibleThumbnails) {
+        if (cancelled) break;
+        if (renderedThumbnails.has(pageNum)) continue;
+        if (renderingPages.current.has(pageNum)) continue;
 
-      (async () => {
+        const canvas = canvasRefs.current.get(pageNum);
+        if (!canvas) continue;
+
+        renderingPages.current.add(pageNum);
         try {
-          const page = await document.getPage(pageNum);
+          const page = await document!.getPage(pageNum);
+          if (cancelled) break;
+
           const viewport = page.getViewport({ scale: THUMBNAIL_SCALE, rotation });
           const context = canvas.getContext('2d');
-          if (!context) return;
+          if (!context) { renderingPages.current.delete(pageNum); continue; }
 
           canvas.width = viewport.width;
           canvas.height = viewport.height;
@@ -72,12 +80,19 @@ export function ThumbnailSidebar({ className }: ThumbnailSidebarProps) {
           canvas.style.height = `${viewport.height}px`;
 
           await page.render({ canvasContext: context, viewport }).promise;
-          setRenderedThumbnails((prev) => new Set(prev).add(pageNum));
+          if (!cancelled) {
+            setRenderedThumbnails((prev) => new Set(prev).add(pageNum));
+          }
         } catch {
           // ignore render errors
+        } finally {
+          renderingPages.current.delete(pageNum);
         }
-      })();
+      }
     }
+
+    renderQueue();
+    return () => { cancelled = true; };
   }, [document, visibleThumbnails, renderedThumbnails, isThumbnailsOpen, rotation]);
 
   // Re-render when rotation changes

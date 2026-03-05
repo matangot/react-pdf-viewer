@@ -59,6 +59,28 @@ export function Pages({ className }: PagesProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visiblePages]);
 
+  // Scroll to page when currentPage changes programmatically
+  const lastScrolledPage = useRef(currentPage);
+  useEffect(() => {
+    if (currentPage === lastScrolledPage.current) return;
+    lastScrolledPage.current = currentPage;
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    const target = container.querySelector(
+      `[data-page-number="${currentPage}"]`
+    );
+    if (target) {
+      isUserScrollRef.current = false;
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Re-enable user scroll detection after animation
+      setTimeout(() => {
+        isUserScrollRef.current = true;
+      }, 500);
+    }
+  }, [currentPage]);
+
   // Set the container ref on context for fit-zoom calculations
   useEffect(() => {
     if (containerRef.current && ctxContainerRef) {

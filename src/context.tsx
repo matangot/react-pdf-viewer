@@ -146,17 +146,30 @@ export function PdfViewerProvider({
     setCurrentMatchIndex(matches.length > 0 ? 0 : -1);
   }, [document]);
 
+  const navigateToMatch = useCallback((matchIndex: number) => {
+    if (matchIndex < 0 || matchIndex >= searchMatches.length) return;
+    const match = searchMatches[matchIndex];
+    // Navigate to the page containing this match (pageIndex is 0-based)
+    goToPage(match.pageIndex + 1);
+  }, [searchMatches, goToPage]);
+
   const nextMatch = useCallback(() => {
     if (searchMatches.length === 0) return;
-    setCurrentMatchIndex((prev) => (prev + 1) % searchMatches.length);
-  }, [searchMatches.length]);
+    setCurrentMatchIndex((prev) => {
+      const next = (prev + 1) % searchMatches.length;
+      navigateToMatch(next);
+      return next;
+    });
+  }, [searchMatches.length, navigateToMatch]);
 
   const prevMatch = useCallback(() => {
     if (searchMatches.length === 0) return;
-    setCurrentMatchIndex(
-      (prev) => (prev - 1 + searchMatches.length) % searchMatches.length
-    );
-  }, [searchMatches.length]);
+    setCurrentMatchIndex((prev) => {
+      const next = (prev - 1 + searchMatches.length) % searchMatches.length;
+      navigateToMatch(next);
+      return next;
+    });
+  }, [searchMatches.length, navigateToMatch]);
 
   const clearSearch = useCallback(() => {
     setSearchQuery('');
