@@ -4,6 +4,7 @@ import {
   useState,
   useCallback,
   useMemo,
+  useRef,
   type ReactNode,
 } from 'react';
 import { usePdfDocument } from './hooks/use-pdf-document';
@@ -49,6 +50,8 @@ export function PdfViewerProvider({
   const { document, isLoading, error } = usePdfDocument(src, onDocumentLoad);
 
   const totalPages = document?.numPages ?? 0;
+
+  const containerRef = useRef<HTMLElement | null>(null);
 
   const [currentPage, setCurrentPage] = useState(defaultPage);
   const [zoomLevel, setZoomLevel] = useState(
@@ -99,6 +102,11 @@ export function PdfViewerProvider({
     }
   }, []);
 
+  // Internal: set zoom level without clearing zoomMode (used by fit-zoom computation)
+  const _setZoomLevel = useCallback((level: number) => {
+    setZoomLevel(Math.max(MIN_ZOOM, Math.min(level, MAX_ZOOM)));
+  }, []);
+
   const rotate = useCallback((degrees: number = 90) => {
     setRotation((prev) => (prev + degrees) % 360);
   }, []);
@@ -107,14 +115,36 @@ export function PdfViewerProvider({
     setIsThumbnailsOpen((prev) => !prev);
   }, []);
 
-  const search = useCallback((query: string) => {
+  const search = useCallback(async (query: string) => {
     setSearchQuery(query);
-    // Actual search implementation will be handled by search components
-    if (!query) {
+    if (!query || !document) {
       setSearchMatches([]);
       setCurrentMatchIndex(-1);
+      return;
     }
-  }, []);
+
+    const matches: SearchMatch[] = [];
+    const lowerQuery = query.toLowerCase();
+
+    for (let i = 1; i <= document.numPages; i++) {
+      const page = await document.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items
+        .map((item: any) => item.str)
+        .join(' ')
+        .toLowerCase();
+
+      let startIndex = 0;
+      let matchIdx = 0;
+      while ((startIndex = pageText.indexOf(lowerQuery, startIndex)) !== -1) {
+        matches.push({ pageIndex: i - 1, matchIndex: matchIdx++ });
+        startIndex += lowerQuery.length;
+      }
+    }
+
+    setSearchMatches(matches);
+    setCurrentMatchIndex(matches.length > 0 ? 0 : -1);
+  }, [document]);
 
   const nextMatch = useCallback(() => {
     if (searchMatches.length === 0) return;
@@ -177,12 +207,14 @@ export function PdfViewerProvider({
       searchQuery,
       searchMatches,
       currentMatchIndex,
+      containerRef,
       goToPage,
       nextPage,
       prevPage,
       zoomIn,
       zoomOut,
       zoomTo,
+      _setZoomLevel,
       rotate,
       toggleThumbnails,
       search,
@@ -212,6 +244,7 @@ export function PdfViewerProvider({
       zoomIn,
       zoomOut,
       zoomTo,
+      _setZoomLevel,
       rotate,
       toggleThumbnails,
       search,

@@ -1,3 +1,5 @@
+import type React from 'react';
+
 export type PdfSource = string | File | ArrayBuffer | Uint8Array;
 
 export type ZoomMode = 'fit-width' | 'fit-page';
@@ -37,6 +39,8 @@ export interface PdfViewerActions {
   zoomIn: () => void;
   zoomOut: () => void;
   zoomTo: (value: ZoomValue) => void;
+  /** @internal Set zoom level without clearing zoomMode (used by fit-zoom computation) */
+  _setZoomLevel: (level: number) => void;
   rotate: (degrees?: number) => void;
   toggleThumbnails: () => void;
   search: (query: string) => void;
@@ -46,6 +50,8 @@ export interface PdfViewerActions {
   download: (fileName?: string) => void;
   print: () => void;
   toggleFullScreen: () => void;
+  /** @internal Ref to the pages container element for fit-zoom calculations */
+  containerRef: React.MutableRefObject<HTMLElement | null>;
 }
 
 export type PdfViewerContextValue = PdfViewerState & PdfViewerActions;
