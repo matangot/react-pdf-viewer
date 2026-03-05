@@ -363,21 +363,26 @@
 
 .pdf-viewer__page-text-layer {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow: hidden;
+  text-align: initial;
+  inset: 0;
+  overflow: clip;
+  opacity: 1;
   line-height: 1;
-  color: transparent;
+  -webkit-text-size-adjust: none;
+  -moz-text-size-adjust: none;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+  transform-origin: 0 0;
+  caret-color: CanvasText;
   z-index: 1;
 }
 
-.pdf-viewer__page-text-layer span {
+.pdf-viewer__page-text-layer :is(span, br) {
+  color: transparent;
   position: absolute;
   white-space: pre;
+  cursor: text;
   transform-origin: 0% 0%;
-  color: transparent;
 }
 
 .pdf-viewer__page-text-layer span::selection {
@@ -388,12 +393,10 @@
 .pdf-viewer__page-text-layer .pdf-viewer__search-hit {
   background: var(--pdf-search-highlight);
   border-radius: 2px;
-  opacity: 1;
 }
 
 .pdf-viewer__page-text-layer .pdf-viewer__search-hit--current {
   background: #f97316;
-  opacity: 1;
 }
 
 .pdf-viewer__page-placeholder {
