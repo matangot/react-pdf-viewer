@@ -47,24 +47,22 @@ export function Page({ pageNumber, className }: PageProps) {
 
       // Render text layer
       if (textLayerRef.current) {
-        const textLayer = textLayerRef.current;
-        textLayer.innerHTML = '';
-        textLayer.style.width = `${viewport.width}px`;
-        textLayer.style.height = `${viewport.height}px`;
+        const textLayerDiv = textLayerRef.current;
+        textLayerDiv.innerHTML = '';
+        // pdf.js v4 TextLayer uses --scale-factor CSS variable for dimensions
+        textLayerDiv.style.setProperty('--scale-factor', String(viewport.scale));
 
         const textContent = await page.getTextContent();
-        const pdfjs = await import('pdfjs-dist') as any;
+        const { TextLayer } = await import('pdfjs-dist');
 
-        if (pdfjs.renderTextLayer) {
-          const textRenderTask = pdfjs.renderTextLayer({
-            textContentSource: textContent,
-            container: textLayer,
-            viewport,
-          });
-          await textRenderTask.promise;
-          // Re-apply search highlights after text layer is ready
-          requestAnimationFrame(() => applyHighlightsRef.current?.());
-        }
+        const textLayer = new TextLayer({
+          textContentSource: textContent,
+          container: textLayerDiv,
+          viewport,
+        });
+        await textLayer.render();
+        // Re-apply search highlights after text layer is ready
+        requestAnimationFrame(() => applyHighlightsRef.current?.());
       }
     } catch (err: unknown) {
       // Ignore cancelled render errors
