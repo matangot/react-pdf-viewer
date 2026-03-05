@@ -8,10 +8,11 @@ export interface PagesProps {
 }
 
 export function Pages({ className }: PagesProps) {
-  const { totalPages, goToPage, currentPage, zoomMode, _setZoomLevel, document: pdfDoc, containerRef: ctxContainerRef } = usePdfViewerContext();
+  const { totalPages, _setCurrentPage, currentPage, zoomMode, _setZoomLevel, document: pdfDoc, containerRef: ctxContainerRef, scrollToPageRef } = usePdfViewerContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const [visiblePages, setVisiblePages] = useState<Set<number>>(new Set([1]));
-  const isUserScrollRef = useRef(true);
+  // Tracks whether currentPage was set by scroll (true) or programmatic nav (false)
+  const pageSetByScrollRef = useRef(true);
 
   const handleIntersection = useCallback(
     (entries: IntersectionObserverEntry[]) => {
@@ -48,38 +49,31 @@ export function Pages({ className }: PagesProps) {
     return () => observer.disconnect();
   }, [totalPages, handleIntersection]);
 
-  // Update currentPage based on topmost visible page (only on user scroll)
+  // Update currentPage based on topmost visible page during user scroll
+  // Uses _setCurrentPage (not goToPage) to avoid triggering scrollIntoView
   useEffect(() => {
-    if (visiblePages.size > 0 && isUserScrollRef.current) {
+    if (visiblePages.size > 0) {
       const topmost = Math.min(...visiblePages);
       if (topmost !== currentPage) {
-        goToPage(topmost);
+        _setCurrentPage(topmost);
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visiblePages]);
 
-  // Scroll to page when currentPage changes programmatically
-  const lastScrolledPage = useRef(currentPage);
+  // Expose scrollToPage function via context ref — called by programmatic navigation
   useEffect(() => {
-    if (currentPage === lastScrolledPage.current) return;
-    lastScrolledPage.current = currentPage;
-
-    const container = containerRef.current;
-    if (!container) return;
-
-    const target = container.querySelector(
-      `[data-page-number="${currentPage}"]`
-    );
-    if (target) {
-      isUserScrollRef.current = false;
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      // Re-enable user scroll detection after animation
-      setTimeout(() => {
-        isUserScrollRef.current = true;
-      }, 500);
-    }
-  }, [currentPage]);
+    if (!scrollToPageRef) return;
+    scrollToPageRef.current = (page: number) => {
+      const container = containerRef.current;
+      if (!container) return;
+      const target = container.querySelector(`[data-page-number="${page}"]`);
+      if (target) {
+        pageSetByScrollRef.current = false;
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    };
+  }, [scrollToPageRef]);
 
   // Set the container ref on context for fit-zoom calculations
   useEffect(() => {

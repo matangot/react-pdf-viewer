@@ -69,13 +69,15 @@ export function Page({ pageNumber, className }: PageProps) {
     }
   }, [document, pageNumber, zoomLevel, rotation]);
 
-  // Highlight search matches in the text layer
-  useEffect(() => {
+  // Highlight search matches — placed in highlightLayerRef (sibling of text layer, full opacity)
+  const highlightLayerRef = useRef<HTMLDivElement>(null);
+  const applyHighlights = useCallback(() => {
     const textLayer = textLayerRef.current;
-    if (!textLayer) return;
+    const highlightLayer = highlightLayerRef.current;
+    if (!textLayer || !highlightLayer) return;
 
     // Clear previous highlights
-    textLayer.querySelectorAll('.pdf-viewer__highlight').forEach((el) => el.remove());
+    highlightLayer.innerHTML = '';
 
     if (!searchQuery || searchMatches.length === 0) return;
 
@@ -83,54 +85,53 @@ export function Page({ pageNumber, className }: PageProps) {
     const pageMatches = searchMatches.filter((m) => m.pageIndex === pageNumber - 1);
     if (pageMatches.length === 0) return;
 
-    // Walk text layer spans and highlight matching text
+    // Get all text spans rendered by pdf.js
     const spans = Array.from(textLayer.querySelectorAll('span'));
-    const fullText = spans.map((s) => s.textContent || '').join('');
-    const lowerText = fullText.toLowerCase();
+    if (spans.length === 0) return;
+
+    const pageRect = highlightLayer.parentElement!.getBoundingClientRect();
     const lowerQuery = searchQuery.toLowerCase();
 
-    let searchStart = 0;
-    let matchIdx = 0;
-    while ((searchStart = lowerText.indexOf(lowerQuery, searchStart)) !== -1) {
-      // Find which span(s) contain this match
-      let charCount = 0;
-      for (const span of spans) {
-        const spanText = span.textContent || '';
-        const spanStart = charCount;
-        const spanEnd = charCount + spanText.length;
+    // For each span, check if it contains matching text
+    let pageMatchIdx = 0;
+    for (const span of spans) {
+      const spanText = (span.textContent || '').toLowerCase();
+      let idx = spanText.indexOf(lowerQuery);
+      while (idx !== -1) {
+        const spanRect = span.getBoundingClientRect();
 
-        if (spanEnd > searchStart && spanStart < searchStart + lowerQuery.length) {
-          // This span contains part of the match
-          const rect = span.getBoundingClientRect();
-          const layerRect = textLayer.getBoundingClientRect();
+        const highlight = window.document.createElement('div');
+        highlight.className = 'pdf-viewer__highlight';
 
-          const highlight = window.document.createElement('div');
-          highlight.className = 'pdf-viewer__highlight';
-
-          // Check if this is the current match
-          const globalMatchIndex = pageMatches.findIndex((m) => m.matchIndex === matchIdx);
-          const isCurrentMatch = globalMatchIndex !== -1 &&
-            searchMatches.indexOf(pageMatches[globalMatchIndex]) === currentMatchIndex;
-
-          if (isCurrentMatch) {
+        // Check if this is the current match
+        if (pageMatchIdx < pageMatches.length) {
+          const globalIdx = searchMatches.indexOf(pageMatches[pageMatchIdx]);
+          if (globalIdx === currentMatchIndex) {
             highlight.classList.add('pdf-viewer__highlight--current');
           }
-
-          highlight.style.position = 'absolute';
-          highlight.style.left = `${rect.left - layerRect.left}px`;
-          highlight.style.top = `${rect.top - layerRect.top}px`;
-          highlight.style.width = `${rect.width}px`;
-          highlight.style.height = `${rect.height}px`;
-
-          textLayer.appendChild(highlight);
-          break; // One highlight per match occurrence
         }
-        charCount = spanEnd;
+
+        highlight.style.cssText = `
+          position: absolute;
+          left: ${spanRect.left - pageRect.left}px;
+          top: ${spanRect.top - pageRect.top}px;
+          width: ${spanRect.width}px;
+          height: ${spanRect.height}px;
+        `;
+
+        highlightLayer.appendChild(highlight);
+        pageMatchIdx++;
+        idx = spanText.indexOf(lowerQuery, idx + lowerQuery.length);
       }
-      matchIdx++;
-      searchStart += lowerQuery.length;
     }
   }, [searchQuery, searchMatches, currentMatchIndex, pageNumber]);
+
+  // Re-apply highlights when search state changes or after render completes
+  useEffect(() => {
+    // Small delay to ensure text layer is rendered
+    const timer = setTimeout(applyHighlights, 100);
+    return () => clearTimeout(timer);
+  }, [applyHighlights]);
 
   useEffect(() => {
     renderPage();
@@ -148,6 +149,7 @@ export function Page({ pageNumber, className }: PageProps) {
     <div className={classNames} data-page-number={pageNumber}>
       <canvas ref={canvasRef} className="pdf-viewer__page-canvas" />
       <div ref={textLayerRef} className="pdf-viewer__page-text-layer" />
+      <div ref={highlightLayerRef} className="pdf-viewer__highlight-layer" />
     </div>
   );
 }

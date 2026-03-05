@@ -41,6 +41,8 @@ export interface PdfViewerActions {
   zoomTo: (value: ZoomValue) => void;
   /** @internal Set zoom level without clearing zoomMode (used by fit-zoom computation) */
   _setZoomLevel: (level: number) => void;
+  /** @internal Set current page without scrolling (used by scroll tracking) */
+  _setCurrentPage: (page: number) => void;
   rotate: (degrees?: number) => void;
   toggleThumbnails: () => void;
   search: (query: string) => void;
@@ -52,6 +54,8 @@ export interface PdfViewerActions {
   toggleFullScreen: () => void;
   /** @internal Ref to the pages container element for fit-zoom calculations */
   containerRef: React.MutableRefObject<HTMLElement | null>;
+  /** @internal Ref to scroll-to-page function set by Pages component */
+  scrollToPageRef: React.MutableRefObject<((page: number) => void) | null>;
 }
 
 export type PdfViewerContextValue = PdfViewerState & PdfViewerActions;
