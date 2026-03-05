@@ -52,6 +52,7 @@ export function PdfViewerProvider({
   const totalPages = document?.numPages ?? 0;
 
   const containerRef = useRef<HTMLElement | null>(null);
+  const scrollToPageRef = useRef<((page: number) => void) | null>(null);
 
   const [currentPage, setCurrentPage] = useState(defaultPage);
   const [zoomLevel, setZoomLevel] = useState(
@@ -66,11 +67,24 @@ export function PdfViewerProvider({
   const [searchMatches, setSearchMatches] = useState<SearchMatch[]>([]);
   const [currentMatchIndex, setCurrentMatchIndex] = useState(-1);
 
+  // Internal: just update the page state (used by scroll tracking)
+  const _setCurrentPage = useCallback(
+    (page: number) => {
+      const clamped = Math.max(1, Math.min(page, totalPages));
+      setCurrentPage(clamped);
+      onPageChange?.(clamped);
+    },
+    [totalPages, onPageChange]
+  );
+
+  // Public: navigate to page AND scroll to it
   const goToPage = useCallback(
     (page: number) => {
       const clamped = Math.max(1, Math.min(page, totalPages));
       setCurrentPage(clamped);
       onPageChange?.(clamped);
+      // Scroll to the page (the ref is set by Pages component)
+      scrollToPageRef.current?.(clamped);
     },
     [totalPages, onPageChange]
   );
@@ -221,6 +235,8 @@ export function PdfViewerProvider({
       searchMatches,
       currentMatchIndex,
       containerRef,
+      scrollToPageRef,
+      _setCurrentPage,
       goToPage,
       nextPage,
       prevPage,
@@ -251,6 +267,7 @@ export function PdfViewerProvider({
       searchQuery,
       searchMatches,
       currentMatchIndex,
+      _setCurrentPage,
       goToPage,
       nextPage,
       prevPage,

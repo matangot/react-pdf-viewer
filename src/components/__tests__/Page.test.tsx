@@ -33,6 +33,8 @@ vi.mock('../../context', () => ({
     print: vi.fn(),
     toggleFullScreen: vi.fn(),
     containerRef: { current: null },
+    scrollToPageRef: { current: null },
+    _setCurrentPage: vi.fn(),
   }),
 }));
 
