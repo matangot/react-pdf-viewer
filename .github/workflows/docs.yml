@@ -34,6 +34,8 @@ jobs:
 
       - run: pnpm docs:build
 
+      - run: cp docs-site/CNAME docs-site/dist/CNAME
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
