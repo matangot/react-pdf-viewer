@@ -13,6 +13,10 @@ export { ThumbnailToggle } from './components/ThumbnailToggle';
 export { ThumbnailSidebar } from './components/ThumbnailSidebar';
 export { Pages } from './components/Pages';
 export { Page } from './components/Page';
+export { CursorModeToggle } from './components/CursorModeToggle';
+export { MoreMenu } from './components/MoreMenu';
+export { DropdownMenu, DropdownMenuItem, DropdownMenuSeparator } from './components/DropdownMenu';
+export { DocumentPropertiesModal } from './components/DocumentPropertiesModal';
 export { usePdfViewer } from './hooks/use-pdf-viewer';
 
 export type {
@@ -24,4 +28,9 @@ export type {
   PdfViewerProps,
   PdfViewerRootProps,
   PdfViewerContextValue,
+  CursorMode,
+  ViewMode,
+  ScrollMode,
+  LayoutMode,
+  DocumentProperties,
 } from './types';

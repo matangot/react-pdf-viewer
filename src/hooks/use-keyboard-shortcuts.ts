@@ -24,6 +24,11 @@ export function useKeyboardShortcuts(
         }
       }
 
+      if (!isInput && e.key === 'h') {
+        e.preventDefault();
+        ctx.toggleCursorMode();
+      }
+
       if (e.ctrlKey || e.metaKey) {
         if (e.key === '=' || e.key === '+') {
           e.preventDefault();

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, type KeyboardEvent, type ChangeEvent } from 'react';
 import { usePdfViewerContext } from '../context';
+import { ChevronLeft, ChevronRight } from '../icons';
 
 export interface NavigationProps {
   className?: string;
@@ -45,11 +46,10 @@ export function Navigation({ className }: NavigationProps) {
         className="pdf-viewer__btn"
         onClick={prevPage}
         disabled={currentPage <= 1}
+        title="Previous page"
         aria-label="Previous page"
       >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M10 12L6 8L10 4" />
-        </svg>
+        <ChevronLeft />
       </button>
       <input
         className="pdf-viewer__page-input"
@@ -60,16 +60,18 @@ export function Navigation({ className }: NavigationProps) {
         onBlur={handleBlur}
         aria-label="Page number"
       />
-      <span>of {totalPages}</span>
+      <span className="pdf-viewer__page-count">
+        <span className="pdf-viewer__page-count-desktop">of {totalPages}</span>
+        <span className="pdf-viewer__page-count-mobile">/{totalPages}</span>
+      </span>
       <button
         className="pdf-viewer__btn"
         onClick={nextPage}
         disabled={currentPage >= totalPages}
+        title="Next page"
         aria-label="Next page"
       >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M6 4L10 8L6 12" />
-        </svg>
+        <ChevronRight />
       </button>
     </div>
   );

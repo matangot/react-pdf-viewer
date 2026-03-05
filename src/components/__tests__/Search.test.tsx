@@ -32,20 +32,43 @@ const mockContext = {
   print: vi.fn(),
   toggleFullScreen: vi.fn(),
   containerRef: { current: null },
+  scrollToPageRef: { current: null },
+  _setCurrentPage: vi.fn(),
+  cursorMode: 'select' as const,
+  setCursorMode: vi.fn(),
+  toggleCursorMode: vi.fn(),
+  viewMode: 'single' as const,
+  scrollMode: 'vertical' as const,
+  layoutMode: 'single' as const,
+  setViewMode: vi.fn(),
+  setScrollMode: vi.fn(),
+  setLayoutMode: vi.fn(),
+  isDocPropertiesOpen: false,
+  docProperties: null,
+  isPrinting: false,
+  goToFirstPage: vi.fn(),
+  goToLastPage: vi.fn(),
+  openDocProperties: vi.fn(),
+  closeDocProperties: vi.fn(),
 };
 
 vi.mock('../../context', () => ({
   usePdfViewerContext: () => mockContext,
 }));
 
+function openSearchPanel() {
+  render(<Search />);
+  fireEvent.click(screen.getByLabelText('Search in document'));
+}
+
 describe('Search', () => {
-  it('renders input with placeholder', () => {
-    render(<Search />);
+  it('renders input with placeholder after opening', () => {
+    openSearchPanel();
     expect(screen.getByPlaceholderText('Search...')).toBeInTheDocument();
   });
 
   it('calls search on change', () => {
-    render(<Search />);
+    openSearchPanel();
     fireEvent.change(screen.getByPlaceholderText('Search...'), {
       target: { value: 'hello' },
     });
@@ -53,7 +76,7 @@ describe('Search', () => {
   });
 
   it('calls nextMatch on Enter', () => {
-    render(<Search />);
+    openSearchPanel();
     fireEvent.keyDown(screen.getByPlaceholderText('Search...'), {
       key: 'Enter',
     });
