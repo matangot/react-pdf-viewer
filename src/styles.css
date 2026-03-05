@@ -390,13 +390,15 @@
   color: transparent;
 }
 
-.pdf-viewer__page-text-layer .pdf-viewer__search-hit {
-  background: var(--pdf-search-highlight);
+.pdf-viewer__page-text-layer mark.pdf-viewer__search-hit {
+  color: transparent;
+  background: rgba(253, 224, 71, 0.4);
   border-radius: 2px;
+  padding: 0;
 }
 
-.pdf-viewer__page-text-layer .pdf-viewer__search-hit--current {
-  background: #f97316;
+.pdf-viewer__page-text-layer mark.pdf-viewer__search-hit--current {
+  background: rgba(249, 115, 22, 0.5);
 }
 
 .pdf-viewer__page-placeholder {
