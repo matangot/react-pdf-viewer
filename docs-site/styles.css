@@ -5,14 +5,14 @@
 }
 
 :root {
-  --bg: #0a0a0b;
-  --bg-card: #141415;
-  --bg-code: #1a1a1c;
-  --border: #27272a;
-  --text: #fafafa;
-  --text-muted: #a1a1aa;
+  --bg: #0d1117;
+  --bg-card: #161b22;
+  --bg-code: #161b22;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text-muted: #8b949e;
   --accent: #818cf8;
-  --accent-glow: rgba(129, 140, 248, 0.15);
+  --accent-glow: rgba(129, 140, 248, 0.1);
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
   --max-width: 1200px;
@@ -52,7 +52,7 @@ code {
   right: 0;
   height: 56px;
   z-index: 100;
-  background: rgba(10, 10, 11, 0.8);
+  background: rgba(13, 17, 23, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
@@ -69,21 +69,35 @@ code {
 }
 
 .nav__logo {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
   color: var(--text);
+  letter-spacing: -0.02em;
 }
 
 .nav__logo:hover {
   text-decoration: none;
-  color: var(--accent);
+  color: var(--text);
+}
+
+.nav__logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--accent);
+  border-radius: 6px;
+  color: #fff;
 }
 
 .nav__links {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .nav__icon-link {
@@ -100,7 +114,7 @@ code {
 
 /* ── Hero ── */
 .hero {
-  padding: 140px 24px 80px;
+  padding: 140px 24px 40px;
   text-align: center;
   max-width: var(--max-width);
   margin: 0 auto;
@@ -111,7 +125,7 @@ code {
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.1;
-  background: linear-gradient(135deg, #fff 0%, #818cf8 50%, #c084fc 100%);
+  background: linear-gradient(180deg, #ffffff 30%, #8b949e 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -139,6 +153,10 @@ code {
   color: var(--text-muted);
 }
 
+.hero__install code {
+  color: var(--text);
+}
+
 .hero__copy-btn {
   display: inline-flex;
   align-items: center;
@@ -156,7 +174,7 @@ code {
 
 .hero__copy-btn:hover {
   color: var(--text);
-  border-color: var(--accent);
+  border-color: var(--text-muted);
 }
 
 /* ── Sections ── */
@@ -166,12 +184,20 @@ code {
   padding: 60px 24px;
 }
 
+.section--demo {
+  padding-top: 32px;
+}
+
 .section__heading {
   font-size: 1.8rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   text-align: center;
   margin-bottom: 40px;
+  background: linear-gradient(180deg, #ffffff 30%, #8b949e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* ── Demo ── */
@@ -181,7 +207,7 @@ code {
   overflow: hidden;
   height: 70vh;
   min-height: 500px;
-  box-shadow: 0 0 60px var(--accent-glow), 0 0 120px rgba(129, 140, 248, 0.05);
+  box-shadow: 0 0 80px var(--accent-glow);
 }
 
 /* ── Features Grid ── */
@@ -200,13 +226,19 @@ code {
 }
 
 .feature-card:hover {
-  border-color: var(--accent);
+  border-color: var(--text-muted);
 }
 
 .feature-card__icon {
-  font-size: 1.5rem;
-  display: block;
-  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(129, 140, 248, 0.1);
+  color: var(--accent);
+  margin-bottom: 14px;
 }
 
 .feature-card__title {
@@ -256,28 +288,29 @@ code {
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.7;
-  color: var(--text-muted);
+  color: #c9d1d9;
 }
 
-/* Syntax highlighting */
+/* Syntax highlighting -- GitHub Dark style */
 .code-block__body .keyword {
-  color: #c084fc;
+  color: #ff7b72;
 }
 
 .code-block__body .string {
-  color: #86efac;
+  color: #a5d6ff;
 }
 
 .code-block__body .component {
-  color: #818cf8;
+  color: #7ee787;
 }
 
 .code-block__body .attr {
-  color: #fbbf24;
+  color: #d2a8ff;
 }
 
 .code-block__body .comment {
-  color: #52525b;
+  color: #484f58;
+  font-style: italic;
 }
 
 /* ── Footer ── */
@@ -300,6 +333,7 @@ code {
 
 .footer a:hover {
   color: var(--text);
+  text-decoration: none;
 }
 
 .footer__dot {
