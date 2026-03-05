@@ -1,3 +1,4 @@
 node_modules
 dist
+docs-site/dist
 .DS_Store
