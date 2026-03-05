@@ -368,41 +368,32 @@
   right: 0;
   bottom: 0;
   overflow: hidden;
-  opacity: 0.25;
   line-height: 1;
+  color: transparent;
+  z-index: 1;
 }
 
 .pdf-viewer__page-text-layer span {
   position: absolute;
   white-space: pre;
   transform-origin: 0% 0%;
+  color: transparent;
 }
 
 .pdf-viewer__page-text-layer span::selection {
-  background: var(--pdf-search-highlight);
-  mix-blend-mode: multiply;
+  background: rgba(37, 99, 235, 0.3);
+  color: transparent;
 }
 
-.pdf-viewer__highlight-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.pdf-viewer__highlight {
+.pdf-viewer__page-text-layer .pdf-viewer__search-hit {
   background: var(--pdf-search-highlight);
-  opacity: 0.4;
-  pointer-events: none;
   border-radius: 2px;
+  opacity: 1;
 }
 
-.pdf-viewer__highlight--current {
+.pdf-viewer__page-text-layer .pdf-viewer__search-hit--current {
   background: #f97316;
-  opacity: 0.6;
+  opacity: 1;
 }
 
 .pdf-viewer__page-placeholder {

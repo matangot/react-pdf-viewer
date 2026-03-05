@@ -11,6 +11,7 @@ export function Page({ pageNumber, className }: PageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const textLayerRef = useRef<HTMLDivElement>(null);
   const renderTaskRef = useRef<{ cancel: () => void } | null>(null);
+  const applyHighlightsRef = useRef<(() => void) | null>(null);
 
   const renderPage = useCallback(async () => {
     if (!document || !canvasRef.current) return;
@@ -61,6 +62,8 @@ export function Page({ pageNumber, className }: PageProps) {
             viewport,
           });
           await textRenderTask.promise;
+          // Re-apply search highlights after text layer is ready
+          requestAnimationFrame(() => applyHighlightsRef.current?.());
         }
       }
     } catch (err: unknown) {
@@ -69,68 +72,48 @@ export function Page({ pageNumber, className }: PageProps) {
     }
   }, [document, pageNumber, zoomLevel, rotation]);
 
-  // Highlight search matches — placed in highlightLayerRef (sibling of text layer, full opacity)
-  const highlightLayerRef = useRef<HTMLDivElement>(null);
+  // Highlight search matches by adding classes directly to text layer spans
   const applyHighlights = useCallback(() => {
     const textLayer = textLayerRef.current;
-    const highlightLayer = highlightLayerRef.current;
-    if (!textLayer || !highlightLayer) return;
+    if (!textLayer) return;
 
     // Clear previous highlights
-    highlightLayer.innerHTML = '';
+    textLayer.querySelectorAll('.pdf-viewer__search-hit').forEach((el) => {
+      el.classList.remove('pdf-viewer__search-hit', 'pdf-viewer__search-hit--current');
+    });
 
     if (!searchQuery || searchMatches.length === 0) return;
 
-    // Find matches on this page
     const pageMatches = searchMatches.filter((m) => m.pageIndex === pageNumber - 1);
     if (pageMatches.length === 0) return;
 
-    // Get all text spans rendered by pdf.js
-    const spans = Array.from(textLayer.querySelectorAll('span'));
-    if (spans.length === 0) return;
-
-    const pageRect = highlightLayer.parentElement!.getBoundingClientRect();
     const lowerQuery = searchQuery.toLowerCase();
+    const spans = Array.from(textLayer.querySelectorAll('span'));
 
-    // For each span, check if it contains matching text
     let pageMatchIdx = 0;
     for (const span of spans) {
       const spanText = (span.textContent || '').toLowerCase();
-      let idx = spanText.indexOf(lowerQuery);
-      while (idx !== -1) {
-        const spanRect = span.getBoundingClientRect();
+      if (spanText.includes(lowerQuery)) {
+        span.classList.add('pdf-viewer__search-hit');
 
-        const highlight = window.document.createElement('div');
-        highlight.className = 'pdf-viewer__highlight';
-
-        // Check if this is the current match
+        // Check if this is the current active match
         if (pageMatchIdx < pageMatches.length) {
           const globalIdx = searchMatches.indexOf(pageMatches[pageMatchIdx]);
           if (globalIdx === currentMatchIndex) {
-            highlight.classList.add('pdf-viewer__highlight--current');
+            span.classList.add('pdf-viewer__search-hit--current');
           }
         }
-
-        highlight.style.cssText = `
-          position: absolute;
-          left: ${spanRect.left - pageRect.left}px;
-          top: ${spanRect.top - pageRect.top}px;
-          width: ${spanRect.width}px;
-          height: ${spanRect.height}px;
-        `;
-
-        highlightLayer.appendChild(highlight);
         pageMatchIdx++;
-        idx = spanText.indexOf(lowerQuery, idx + lowerQuery.length);
       }
     }
   }, [searchQuery, searchMatches, currentMatchIndex, pageNumber]);
 
-  // Re-apply highlights when search state changes or after render completes
+  // Keep ref in sync for use by renderPage callback
+  applyHighlightsRef.current = applyHighlights;
+
+  // Re-apply highlights when search state changes
   useEffect(() => {
-    // Small delay to ensure text layer is rendered
-    const timer = setTimeout(applyHighlights, 100);
-    return () => clearTimeout(timer);
+    applyHighlights();
   }, [applyHighlights]);
 
   useEffect(() => {
@@ -149,7 +132,6 @@ export function Page({ pageNumber, className }: PageProps) {
     <div className={classNames} data-page-number={pageNumber}>
       <canvas ref={canvasRef} className="pdf-viewer__page-canvas" />
       <div ref={textLayerRef} className="pdf-viewer__page-text-layer" />
-      <div ref={highlightLayerRef} className="pdf-viewer__highlight-layer" />
     </div>
   );
 }
