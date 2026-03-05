@@ -5,11 +5,30 @@ export type PdfSource = string | File | ArrayBuffer | Uint8Array;
 export type ZoomMode = 'fit-width' | 'fit-page';
 export type ZoomValue = number | ZoomMode;
 export type Theme = 'light' | 'dark' | 'system';
+export type CursorMode = 'select' | 'hand';
+export type ViewMode = 'single' | 'dual';
+export type ScrollMode = 'page' | 'vertical' | 'horizontal';
+/** @deprecated Use ViewMode and ScrollMode instead */
+export type LayoutMode = 'single' | 'dual' | 'horizontal';
 
 export interface DocumentInfo {
   numPages: number;
   title?: string;
   author?: string;
+}
+
+export interface DocumentProperties {
+  fileName: string;
+  fileSize: string;
+  title: string;
+  author: string;
+  subject: string;
+  creator: string;
+  producer: string;
+  creationDate: string;
+  modificationDate: string;
+  pageCount: number;
+  pageSize: string;
 }
 
 export interface SearchMatch {
@@ -30,6 +49,13 @@ export interface PdfViewerState {
   searchQuery: string;
   searchMatches: SearchMatch[];
   currentMatchIndex: number;
+  cursorMode: CursorMode;
+  viewMode: ViewMode;
+  scrollMode: ScrollMode;
+  layoutMode: LayoutMode;
+  isDocPropertiesOpen: boolean;
+  docProperties: DocumentProperties | null;
+  isPrinting: boolean;
 }
 
 export interface PdfViewerActions {
@@ -52,6 +78,15 @@ export interface PdfViewerActions {
   download: (fileName?: string) => void;
   print: () => void;
   toggleFullScreen: () => void;
+  setCursorMode: (mode: CursorMode) => void;
+  toggleCursorMode: () => void;
+  setViewMode: (mode: ViewMode) => void;
+  setScrollMode: (mode: ScrollMode) => void;
+  setLayoutMode: (mode: LayoutMode) => void;
+  goToFirstPage: () => void;
+  goToLastPage: () => void;
+  openDocProperties: () => void;
+  closeDocProperties: () => void;
   /** @internal Ref to the pages container element for fit-zoom calculations */
   containerRef: React.MutableRefObject<HTMLElement | null>;
   /** @internal Ref to scroll-to-page function set by Pages component */
@@ -64,6 +99,8 @@ export interface PdfViewerRootProps {
   src: PdfSource;
   defaultPage?: number;
   defaultZoom?: ZoomValue;
+  defaultCursorMode?: CursorMode;
+  defaultSidebarOpen?: boolean;
   theme?: Theme;
   onPageChange?: (page: number) => void;
   onDocumentLoad?: (info: DocumentInfo) => void;

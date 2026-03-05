@@ -95,6 +95,27 @@ export function ThumbnailSidebar({ className }: ThumbnailSidebarProps) {
     return () => { cancelled = true; };
   }, [document, visibleThumbnails, renderedThumbnails, isThumbnailsOpen, rotation]);
 
+  // Scroll active thumbnail into view when currentPage changes
+  const lastClickedRef = useRef<number | null>(null);
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || !isThumbnailsOpen) return;
+    // Skip if this page change was from clicking a thumbnail
+    if (lastClickedRef.current === currentPage) {
+      lastClickedRef.current = null;
+      return;
+    }
+    const active = container.querySelector(`[data-thumbnail-page="${currentPage}"]`) as HTMLElement | null;
+    if (!active) return;
+    const containerTop = container.scrollTop;
+    const containerBottom = containerTop + container.clientHeight;
+    const elTop = active.offsetTop - container.offsetTop;
+    const elBottom = elTop + active.offsetHeight;
+    if (elTop < containerTop || elBottom > containerBottom) {
+      container.scrollTo({ top: Math.max(0, elTop - 8) });
+    }
+  }, [currentPage, isThumbnailsOpen]);
+
   // Re-render when rotation changes
   useEffect(() => {
     setRenderedThumbnails(new Set());
@@ -115,7 +136,7 @@ export function ThumbnailSidebar({ className }: ThumbnailSidebarProps) {
             key={pageNum}
             className={`pdf-viewer__thumbnail${currentPage === pageNum ? ' pdf-viewer__thumbnail--active' : ''}`}
             data-thumbnail-page={pageNum}
-            onClick={() => goToPage(pageNum)}
+            onClick={() => { lastClickedRef.current = pageNum; goToPage(pageNum); }}
           >
             <canvas
               ref={(el) => {

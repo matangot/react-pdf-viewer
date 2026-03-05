@@ -1,8 +1,12 @@
 import { usePdfViewerContext } from '../context';
+import { Minus, Plus, ArrowLeftRight, RectangleVertical } from '../icons';
+import { DropdownMenu, DropdownMenuItem, DropdownMenuSeparator } from './DropdownMenu';
 
 export interface ZoomProps {
   className?: string;
 }
+
+const ZOOM_PRESETS = [0.5, 0.75, 1, 1.25, 1.5, 2, 3];
 
 export function Zoom({ className }: ZoomProps) {
   const { zoomLevel, zoomMode, zoomIn, zoomOut, zoomTo } =
@@ -12,44 +16,57 @@ export function Zoom({ className }: ZoomProps) {
     .filter(Boolean)
     .join(' ');
 
+  const displayPercent = `${Math.round(zoomLevel * 20) * 5}%`;
+
+  const isPresetActive = (preset: number) =>
+    !zoomMode && Math.abs(zoomLevel - preset) < 0.01;
+
   return (
     <div className={classNames}>
       <button
         className="pdf-viewer__btn"
         onClick={zoomOut}
+        title="Zoom out"
         aria-label="Zoom out"
       >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M4 8H12" />
-        </svg>
+        <Minus />
       </button>
-      <span>{Math.round(zoomLevel * 100)}%</span>
+      <DropdownMenu
+        trigger={<span className="pdf-viewer__zoom-level-text">{displayPercent}</span>}
+        triggerClassName="pdf-viewer__zoom-trigger"
+        title="Zoom level"
+        align="center"
+        className="pdf-viewer__zoom-dropdown"
+      >
+        {ZOOM_PRESETS.map((preset) => (
+          <DropdownMenuItem
+            key={preset}
+            label={`${Math.round(preset * 100)}%`}
+            onClick={() => zoomTo(preset)}
+            active={isPresetActive(preset)}
+          />
+        ))}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          icon={<ArrowLeftRight />}
+          label="Fit Width"
+          onClick={() => zoomTo('fit-width')}
+          active={zoomMode === 'fit-width'}
+        />
+        <DropdownMenuItem
+          icon={<RectangleVertical />}
+          label="Fit Page"
+          onClick={() => zoomTo('fit-page')}
+          active={zoomMode === 'fit-page'}
+        />
+      </DropdownMenu>
       <button
         className="pdf-viewer__btn"
         onClick={zoomIn}
+        title="Zoom in"
         aria-label="Zoom in"
       >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M8 4V12M4 8H12" />
-        </svg>
-      </button>
-      <button
-        className={`pdf-viewer__btn${zoomMode === 'fit-width' ? ' pdf-viewer__btn--active' : ''}`}
-        onClick={() => zoomTo('fit-width')}
-        aria-label="Fit width"
-      >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M2 4V12M14 4V12M4 8H12" />
-        </svg>
-      </button>
-      <button
-        className={`pdf-viewer__btn${zoomMode === 'fit-page' ? ' pdf-viewer__btn--active' : ''}`}
-        onClick={() => zoomTo('fit-page')}
-        aria-label="Fit page"
-      >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-          <rect x="3" y="2" width="10" height="12" rx="1" />
-        </svg>
+        <Plus />
       </button>
     </div>
   );

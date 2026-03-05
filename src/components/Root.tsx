@@ -46,6 +46,8 @@ export function Root({
   src,
   defaultPage,
   defaultZoom,
+  defaultCursorMode,
+  defaultSidebarOpen,
   theme = 'system',
   onPageChange,
   onDocumentLoad,
@@ -57,6 +59,8 @@ export function Root({
       src={src}
       defaultPage={defaultPage}
       defaultZoom={defaultZoom}
+      defaultCursorMode={defaultCursorMode}
+      defaultSidebarOpen={defaultSidebarOpen}
       onPageChange={onPageChange}
       onDocumentLoad={onDocumentLoad}
     >

@@ -1,4 +1,5 @@
 import { usePdfViewerContext } from '../context';
+import { Download as DownloadIcon } from '../icons';
 
 export interface DownloadProps {
   fileName?: string;
@@ -16,11 +17,10 @@ export function Download({ fileName, className }: DownloadProps) {
     <button
       className={classNames}
       onClick={() => download(fileName)}
+      title="Download"
       aria-label="Download PDF"
     >
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M8 2v8M4 7l4 4 4-4M2 13h12" />
-      </svg>
+      <DownloadIcon />
     </button>
   );
 }
