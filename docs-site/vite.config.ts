@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   root: 'docs-site',
-  base: '/react-pdf-viewer/',
+  base: '/',
   build: {
     outDir: 'dist',
   },
