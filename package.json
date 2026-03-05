@@ -29,7 +29,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "demo": "vite --config demo/vite.config.ts --host",
-    "docs:dev": "vite --config docs-site/vite.config.ts"
+    "docs:dev": "vite --config docs-site/vite.config.ts",
+    "docs:build": "vite build --config docs-site/vite.config.ts"
   },
   "peerDependencies": {
     "pdfjs-dist": ">=3.0.0",
