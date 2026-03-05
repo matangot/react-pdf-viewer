@@ -52,7 +52,7 @@ export function Page({ pageNumber, className }: PageProps) {
         textLayer.style.height = `${viewport.height}px`;
 
         const textContent = await page.getTextContent();
-        const pdfjs = await import('pdfjs-dist');
+        const pdfjs = await import('pdfjs-dist') as any;
 
         if (pdfjs.renderTextLayer) {
           const textRenderTask = pdfjs.renderTextLayer({
