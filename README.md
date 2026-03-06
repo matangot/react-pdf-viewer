@@ -147,6 +147,10 @@ For a completely custom look, skip importing `styles.css` and style from scratch
 | `Enter` | Next search match |
 | `Shift + Enter` | Previous search match |
 
+## Support
+
+<a href="https://www.buymeacoffee.com/matangot" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
 ## License
 
 MIT
