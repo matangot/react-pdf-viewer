@@ -542,6 +542,7 @@
   align-items: inherit;
   gap: inherit;
   min-height: 100%;
+  flex-shrink: 0;
 }
 
 /* View mode: dual (side-by-side pairs) */
@@ -567,6 +568,7 @@
 
 .pdf-viewer__page-wrapper {
   position: relative;
+  flex-shrink: 0;
 }
 
 .pdf-viewer__page {

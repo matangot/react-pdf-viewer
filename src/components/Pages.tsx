@@ -68,13 +68,29 @@ export function Pages({ className }: PagesProps) {
       const cr = container.getBoundingClientRect();
       const buffer = 200;
       const visible = new Set<number>();
+      // Compute current page by most viewport overlap in the same loop (no extra DOM reads).
+      let bestPage = 0;
+      let bestOverlap = 0;
 
       for (const el of wrappersArray) {
         const er = el.getBoundingClientRect();
+        const pageNum = Number(el.dataset.pageNumber);
         const inView = scrollMode === 'horizontal'
           ? er.right > cr.left - buffer && er.left < cr.right + buffer
           : er.bottom > cr.top - buffer && er.top < cr.bottom + buffer;
-        if (inView) visible.add(Number(el.dataset.pageNumber));
+        if (inView) visible.add(pageNum);
+
+        // Overlap with the actual viewport (no buffer) for current page detection
+        let overlap: number;
+        if (scrollMode === 'horizontal') {
+          overlap = Math.max(0, Math.min(er.right, cr.right) - Math.max(er.left, cr.left));
+        } else {
+          overlap = Math.max(0, Math.min(er.bottom, cr.bottom) - Math.max(er.top, cr.top));
+        }
+        if (overlap > bestOverlap) {
+          bestOverlap = overlap;
+          bestPage = pageNum;
+        }
       }
 
       visiblePagesRef.current = visible;
@@ -88,11 +104,21 @@ export function Pages({ className }: PagesProps) {
       if (navigatingRef.current) return;
       cancelAnimationFrame(pageUpdateRafRef.current);
       pageUpdateRafRef.current = requestAnimationFrame(() => {
-        const vis = visiblePagesRef.current;
-        if (vis.size > 0) {
-          const target = navigateTargetRef.current;
-          const topmost = (target !== null && vis.has(target)) ? target : Math.min(...vis);
-          navigateTargetRef.current = null;
+        const target = navigateTargetRef.current;
+
+        if (bestPage === 0 && visible.size > 0) {
+          bestPage = Math.min(...visible);
+        }
+
+        if (bestPage > 0) {
+          // Keep navigate target sticky as long as the target page is visible.
+          // This prevents programmatic navigation to the last page from being
+          // overridden by the overlap algorithm (since the last page can't be
+          // scrolled to fill the viewport).
+          const topmost = (target !== null && visible.has(target)) ? target : bestPage;
+          if (target !== null && !visible.has(target)) {
+            navigateTargetRef.current = null;
+          }
           if (topmost !== lastReportedPageRef.current) {
             lastReportedPageRef.current = topmost;
             _setCurrentPageRef.current(topmost);
@@ -162,9 +188,11 @@ export function Pages({ className }: PagesProps) {
         navigatingRef.current = false;
       }, 150);
       if (scrollMode === 'horizontal') {
-        container.scrollTo({ left: target.offsetLeft - container.offsetLeft });
+        const offset = target.getBoundingClientRect().left - container.getBoundingClientRect().left + container.scrollLeft;
+        container.scrollTo({ left: offset, behavior: 'instant' });
       } else {
-        container.scrollTo({ top: target.offsetTop - container.offsetTop });
+        const offset = target.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop;
+        container.scrollTo({ top: offset, behavior: 'instant' });
       }
     };
   }, [scrollToPageRef, scrollMode, viewMode]);
