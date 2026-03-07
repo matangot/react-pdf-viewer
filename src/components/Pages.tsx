@@ -35,48 +35,6 @@ export function Pages({ className }: PagesProps) {
   const _setCurrentPageRef = useRef(_setCurrentPage);
   _setCurrentPageRef.current = _setCurrentPage;
 
-  const handleIntersection = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      const prev = visiblePagesRef.current;
-      for (const entry of entries) {
-        const pageNum = Number(
-          (entry.target as HTMLElement).dataset.pageNumber
-        );
-        if (entry.isIntersecting) {
-          prev.add(pageNum);
-        } else {
-          prev.delete(pageNum);
-        }
-      }
-
-      // Only trigger re-render if the set of pages we should render changes
-      const newRenderSet = computeRenderSet(prev);
-      const oldRenderSet = lastRenderSetRef.current;
-      if (newRenderSet.size !== oldRenderSet.size || [...newRenderSet].some(p => !oldRenderSet.has(p))) {
-        lastRenderSetRef.current = newRenderSet;
-        setRenderGeneration(g => g + 1);
-      }
-
-      // Debounce current page updates — coalesce rapid IO events into one update
-      if (navigatingRef.current) return;
-      cancelAnimationFrame(pageUpdateRafRef.current);
-      pageUpdateRafRef.current = requestAnimationFrame(() => {
-        const visible = visiblePagesRef.current;
-        if (visible.size > 0) {
-          // If we navigated to a specific page and it's still visible, keep it as current
-          const target = navigateTargetRef.current;
-          const topmost = (target !== null && visible.has(target)) ? target : Math.min(...visible);
-          navigateTargetRef.current = null;
-          if (topmost !== lastReportedPageRef.current) {
-            lastReportedPageRef.current = topmost;
-            _setCurrentPageRef.current(topmost);
-          }
-        }
-      });
-    },
-    [computeRenderSet]
-  );
-
   // Fetch base page dimensions once
   useEffect(() => {
     if (!pdfDoc) return;
@@ -86,20 +44,67 @@ export function Pages({ className }: PagesProps) {
     });
   }, [pdfDoc, rotation]);
 
+  // Scroll-based visibility detection (replaces IntersectionObserver for reliability)
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const observer = new IntersectionObserver(handleIntersection, {
-      root: container,
-      rootMargin: scrollMode === 'horizontal' ? '0px 200px' : '200px 0px',
-    });
+    const wrappers = container.querySelectorAll<HTMLElement>(
+      '.pdf-viewer__page-wrapper[data-page-number]'
+    );
+    const wrappersArray = Array.from(wrappers);
 
-    const wrappers = container.querySelectorAll('[data-page-number]');
-    wrappers.forEach((el) => observer.observe(el));
+    const updateVisibility = () => {
+      const cr = container.getBoundingClientRect();
+      const buffer = 200;
+      const visible = new Set<number>();
 
-    return () => observer.disconnect();
-  }, [totalPages, handleIntersection, scrollMode]);
+      for (const el of wrappersArray) {
+        const er = el.getBoundingClientRect();
+        const inView = scrollMode === 'horizontal'
+          ? er.right > cr.left - buffer && er.left < cr.right + buffer
+          : er.bottom > cr.top - buffer && er.top < cr.bottom + buffer;
+        if (inView) visible.add(Number(el.dataset.pageNumber));
+      }
+
+      visiblePagesRef.current = visible;
+      const newRenderSet = computeRenderSet(visible);
+      const oldRenderSet = lastRenderSetRef.current;
+      if (newRenderSet.size !== oldRenderSet.size || [...newRenderSet].some(p => !oldRenderSet.has(p))) {
+        lastRenderSetRef.current = newRenderSet;
+        setRenderGeneration(g => g + 1);
+      }
+
+      if (navigatingRef.current) return;
+      cancelAnimationFrame(pageUpdateRafRef.current);
+      pageUpdateRafRef.current = requestAnimationFrame(() => {
+        const vis = visiblePagesRef.current;
+        if (vis.size > 0) {
+          const target = navigateTargetRef.current;
+          const topmost = (target !== null && vis.has(target)) ? target : Math.min(...vis);
+          navigateTargetRef.current = null;
+          if (topmost !== lastReportedPageRef.current) {
+            lastReportedPageRef.current = topmost;
+            _setCurrentPageRef.current(topmost);
+          }
+        }
+      });
+    };
+
+    let rafId = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(updateVisibility);
+    };
+
+    updateVisibility();
+    container.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      container.removeEventListener('scroll', onScroll);
+      cancelAnimationFrame(rafId);
+      cancelAnimationFrame(pageUpdateRafRef.current);
+    };
+  }, [totalPages, computeRenderSet, scrollMode, zoomLevel, baseDims, viewMode]);
 
   // Reset navigating flag after programmatic scroll settles
   const navigatingTimerRef = useRef(0);
@@ -405,11 +410,17 @@ export function Pages({ className }: PagesProps) {
       isActive && 'pdf-viewer__page-wrapper--active',
     ].filter(Boolean).join(' ');
 
+    const wrapperStyle = baseDims ? {
+      width: `${baseDims.width * zoomLevel}px`,
+      height: `${baseDims.height * zoomLevel}px`,
+    } : undefined;
+
     return (
       <div
         key={pageNum}
         className={wrapperClass}
         data-page-number={pageNum}
+        style={wrapperStyle}
       >
         {shouldRenderPage(pageNum) ? (
           <Page pageNumber={pageNum} />
