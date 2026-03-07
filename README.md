@@ -1,4 +1,4 @@
-# @matangot/react-pdf-viewer
+# React PDF Viewer
 
 A fast, customizable React PDF viewer component powered by pdf.js. Works with Next.js, Vite, CRA, and any React environment.
 
@@ -121,14 +121,49 @@ Override CSS custom properties to customize the look:
 
 ```css
 .pdf-viewer {
-  --pdf-toolbar-bg: #1a1a2e;
-  --pdf-toolbar-color: #ffffff;
-  --pdf-toolbar-height: 48px;
-  --pdf-sidebar-width: 200px;
-  --pdf-page-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  --pdf-page-gap: 16px;
-  --pdf-search-highlight: rgba(255, 230, 0, 0.4);
-  --pdf-font-family: system-ui, sans-serif;
+  /* Colors */
+  --pdf-primary: #18181b;
+  --pdf-primary-hover: #27272a;
+  --pdf-bg: #fafafa;
+  --pdf-text: #18181b;
+  --pdf-text-muted: #71717a;
+
+  /* Toolbar */
+  --pdf-toolbar-bg: #f0f0f2;
+  --pdf-toolbar-border: #e4e4e7;
+
+  /* Buttons */
+  --pdf-btn-hover: #f4f4f5;
+  --pdf-btn-active: #e4e4e7;
+
+  /* Inputs */
+  --pdf-input-bg: #ffffff;
+  --pdf-input-border: #d4d4d8;
+  --pdf-input-focus-border: #71717a;
+
+  /* Sidebar */
+  --pdf-sidebar-bg: #f0f0f2;
+  --pdf-sidebar-width: 180px;
+
+  /* Pages */
+  --pdf-page-bg: #ffffff;
+  --pdf-page-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --pdf-page-gap: 12px;
+  --pdf-placeholder-bg: #f4f4f5;
+
+  /* Search */
+  --pdf-search-highlight: #fde68a;
+
+  /* Thumbnails */
+  --pdf-thumbnail-border: transparent;
+  --pdf-thumbnail-active-border: var(--pdf-primary);
+
+  /* Dropdowns */
+  --pdf-dropdown-bg: #ffffff;
+  --pdf-dropdown-border: #d4d4d8;
+  --pdf-dropdown-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.08);
+  --pdf-dropdown-hover: #f4f4f5;
+  --pdf-dropdown-icon: #52525b;
 }
 ```
 
