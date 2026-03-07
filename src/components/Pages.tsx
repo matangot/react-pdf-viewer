@@ -14,6 +14,7 @@ export function Pages({ className }: PagesProps) {
   // Base page dimensions at scale=1 (fetched once from page 1)
   const [baseDims, setBaseDims] = useState<{ width: number; height: number } | null>(null);
   const navigatingRef = useRef(false);
+  const navigateTargetRef = useRef<number | null>(null);
   const lastReportedPageRef = useRef(1);
   const pageUpdateRafRef = useRef(0);
   // Only re-render when the set of pages to render actually changes
@@ -62,7 +63,10 @@ export function Pages({ className }: PagesProps) {
       pageUpdateRafRef.current = requestAnimationFrame(() => {
         const visible = visiblePagesRef.current;
         if (visible.size > 0) {
-          const topmost = Math.min(...visible);
+          // If we navigated to a specific page and it's still visible, keep it as current
+          const target = navigateTargetRef.current;
+          const topmost = (target !== null && visible.has(target)) ? target : Math.min(...visible);
+          navigateTargetRef.current = null;
           if (topmost !== lastReportedPageRef.current) {
             lastReportedPageRef.current = topmost;
             _setCurrentPageRef.current(topmost);
@@ -124,6 +128,7 @@ export function Pages({ className }: PagesProps) {
     scrollToPageRef.current = (page: number) => {
       // Sync lastReportedPageRef so the IO observer won't override the navigated page
       lastReportedPageRef.current = page;
+      navigateTargetRef.current = page;
       if (scrollMode === 'page') {
         // In page scroll mode, navigation is handled by re-render (active class)
         navigatingRef.current = false;
