@@ -19,10 +19,10 @@ import {
   ArrowLeftRight,
   ZoomIn,
   Search as SearchIcon,
-  PanelLeft,
   SunMoon,
   Download as DownloadIcon,
   Keyboard,
+  Feather,
   Blocks,
   Github,
   Package,
@@ -131,22 +131,30 @@ const ICON_SIZE = 18;
 const ICON_STROKE = 1.5;
 
 const features = [
-  { icon: <ArrowLeftRight size={ICON_SIZE} strokeWidth={ICON_STROKE} />, title: 'Navigation', desc: 'Page-by-page or jump to any page with keyboard shortcuts' },
-  { icon: <ZoomIn size={ICON_SIZE} strokeWidth={ICON_STROKE} />, title: 'Zoom', desc: 'Fit width, fit page, or precise zoom control' },
-  { icon: <SearchIcon size={ICON_SIZE} strokeWidth={ICON_STROKE} />, title: 'Search', desc: 'Full-text search with match highlighting and navigation' },
-  { icon: <PanelLeft size={ICON_SIZE} strokeWidth={ICON_STROKE} />, title: 'Thumbnails', desc: 'Sidebar with page thumbnails for quick navigation' },
-  { icon: <SunMoon size={ICON_SIZE} strokeWidth={ICON_STROKE} />, title: 'Theming', desc: 'Light, dark, and system themes with CSS custom properties' },
-  { icon: <DownloadIcon size={ICON_SIZE} strokeWidth={ICON_STROKE} />, title: 'Print & Download', desc: 'Native print dialog and one-click file download' },
-  { icon: <Keyboard size={ICON_SIZE} strokeWidth={ICON_STROKE} />, title: 'Keyboard Shortcuts', desc: 'Full keyboard navigation out of the box' },
-  { icon: <Blocks size={ICON_SIZE} strokeWidth={ICON_STROKE} />, title: 'Compound Components', desc: 'Full control over layout and which features to show' },
+  { icon: <ArrowLeftRight size={ICON_SIZE} strokeWidth={ICON_STROKE} />, title: 'Navigation', desc: 'Prev/next, page jump, or scroll — works with keyboard, touch, and mouse' },
+  { icon: <ZoomIn size={ICON_SIZE} strokeWidth={ICON_STROKE} />, title: 'Zoom', desc: 'Pinch-to-zoom on mobile, fit-width, fit-page, or set any scale you need' },
+  { icon: <SearchIcon size={ICON_SIZE} strokeWidth={ICON_STROKE} />, title: 'Search', desc: 'Ctrl+F search across the entire document with highlighted matches' },
+  { icon: <Feather size={ICON_SIZE} strokeWidth={ICON_STROKE} />, title: 'Lightweight', desc: 'Under 20 KB gzipped — just a thin, focused layer on top of pdf.js' },
+  { icon: <SunMoon size={ICON_SIZE} strokeWidth={ICON_STROKE} />, title: 'Theming', desc: 'Light, dark, or match the system — fully customizable via CSS variables' },
+  { icon: <DownloadIcon size={ICON_SIZE} strokeWidth={ICON_STROKE} />, title: 'Print & Download', desc: 'One-click download with custom filenames and native print dialog' },
+  { icon: <Keyboard size={ICON_SIZE} strokeWidth={ICON_STROKE} />, title: 'Keyboard Shortcuts', desc: 'Navigate, zoom, and search without touching the mouse' },
+  { icon: <Blocks size={ICON_SIZE} strokeWidth={ICON_STROKE} />, title: 'Compound Components', desc: 'Pick only the pieces you need and arrange them however you want' },
 ];
 
 /* ── Main App ── */
+const packageManagers = [
+  { name: 'npm', command: 'npm install @matangot/react-pdf-viewer' },
+  { name: 'pnpm', command: 'pnpm add @matangot/react-pdf-viewer' },
+  { name: 'yarn', command: 'yarn add @matangot/react-pdf-viewer' },
+  { name: 'bun', command: 'bun add @matangot/react-pdf-viewer' },
+] as const;
+
 export function App() {
   const [copied, setCopied] = useState(false);
+  const [pm, setPm] = useState(0);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText('npm install @matangot/react-pdf-viewer');
+    navigator.clipboard.writeText(packageManagers[pm].command);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
@@ -173,14 +181,40 @@ export function App() {
 
       {/* ── Hero ── */}
       <section className="hero">
-        <h1 className="hero__title">A Beautiful PDF Viewer for React</h1>
-        <p className="hero__subtitle">Fast, customizable, and powered by pdf.js. Drop it into any React app.</p>
+        <h1 className="hero__title">The PDF Viewer<br />React Has Been Missing</h1>
+        <p className="hero__subtitle">Under 20 KB gzipped. Navigation, search, zoom, thumbnails, and theming — all out of the box.</p>
+        <div className="hero__stats">
+          <div className="hero__stat">
+            <span className="hero__stat-value">&lt;20 KB</span>
+            <span className="hero__stat-label">Gzipped</span>
+          </div>
+          <div className="hero__stat">
+            <span className="hero__stat-value">TypeScript</span>
+            <span className="hero__stat-label">First</span>
+          </div>
+          <div className="hero__stat">
+            <span className="hero__stat-value">MIT</span>
+            <span className="hero__stat-label">Licensed</span>
+          </div>
+        </div>
         <div className="hero__install">
-          <code>npm install @matangot/react-pdf-viewer</code>
-          <button className="hero__copy-btn" onClick={handleCopy} aria-label="Copy install command">
-            {copied ? <Check size={16} strokeWidth={1.5} /> : <Copy size={16} strokeWidth={1.5} />}
-            <span>{copied ? 'Copied!' : 'Copy'}</span>
-          </button>
+          <div className="hero__pm-tabs">
+            {packageManagers.map((p, i) => (
+              <button
+                key={p.name}
+                className={`hero__pm-tab${i === pm ? ' hero__pm-tab--active' : ''}`}
+                onClick={() => setPm(i)}
+              >
+                {p.name}
+              </button>
+            ))}
+          </div>
+          <div className="hero__install-row">
+            <code>{packageManagers[pm].command}</code>
+            <button className="hero__copy-btn" onClick={handleCopy} aria-label="Copy install command">
+              {copied ? <Check size={16} strokeWidth={1.5} /> : <Copy size={16} strokeWidth={1.5} />}
+            </button>
+          </div>
         </div>
       </section>
 
@@ -216,7 +250,7 @@ export function App() {
 
       {/* ── Features ── */}
       <section className="section">
-        <h2 className="section__heading">Everything you need</h2>
+        <h2 className="section__heading">Single import. All of this.</h2>
         <div className="features-grid">
           {features.map((f) => (
             <div key={f.title} className="feature-card">

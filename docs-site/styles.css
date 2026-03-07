@@ -140,36 +140,99 @@ code {
   line-height: 1.6;
 }
 
+.hero__stats {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-bottom: 36px;
+}
+
+.hero__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.hero__stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+}
+
+.hero__stat-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
 .hero__install {
   display: inline-flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
   background: var(--bg-code);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 12px 16px;
+  overflow: hidden;
   font-family: var(--font-mono);
   font-size: 14px;
   color: var(--text-muted);
 }
 
+.hero__pm-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero__pm-tab {
+  flex: 1;
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+}
+
+.hero__pm-tab:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.hero__pm-tab--active {
+  color: var(--accent);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.hero__install-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+}
+
 .hero__install code {
   color: var(--text);
+  min-width: 41ch;
 }
 
 .hero__copy-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
   background: none;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 6px 12px;
+  border: none;
+  width: 32px;
+  height: 32px;
   color: var(--text-muted);
   cursor: pointer;
-  font-family: var(--font-sans);
-  font-size: 13px;
-  transition: color 0.2s, border-color 0.2s;
+  transition: color 0.2s;
+  flex-shrink: 0;
 }
 
 .hero__copy-btn:hover {
@@ -338,4 +401,78 @@ code {
 
 .footer__dot {
   color: var(--border);
+}
+
+/* ── Mobile ── */
+@media (max-width: 600px) {
+  .hero {
+    padding: 110px 16px 32px;
+  }
+
+  .hero__title {
+    font-size: 1.8rem;
+  }
+
+  .hero__subtitle {
+    font-size: 1rem;
+    margin-bottom: 24px;
+  }
+
+  .hero__stats {
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  .hero__stat-value {
+    font-size: 1.15rem;
+  }
+
+  .hero__install {
+    width: 100%;
+  }
+
+  .hero__install-row {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .hero__install-row code {
+    min-width: unset;
+    font-size: 12px;
+  }
+
+  .hero__pm-tab {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .section {
+    padding: 40px 16px;
+  }
+
+  .section__heading {
+    font-size: 1.4rem;
+    margin-bottom: 24px;
+  }
+
+  .demo-container {
+    height: 50vh;
+    min-height: 350px;
+    border-radius: 8px;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .feature-card {
+    padding: 18px;
+  }
+
+  .code-block__body {
+    font-size: 11px;
+    padding: 12px;
+  }
 }
