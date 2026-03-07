@@ -59,12 +59,10 @@ export function Pages({ className }: PagesProps) {
     const container = containerRef.current;
     if (!container) return;
 
-    const wrappers = container.querySelectorAll<HTMLElement>(
-      '.pdf-viewer__page-wrapper[data-page-number]'
-    );
-    const wrappersArray = Array.from(wrappers);
-
     const updateVisibility = () => {
+      const wrappersArray = Array.from(
+        container.querySelectorAll<HTMLElement>('.pdf-viewer__page-wrapper[data-page-number]')
+      );
       const cr = container.getBoundingClientRect();
       const buffer = 200;
       const visible = new Set<number>();
@@ -81,11 +79,17 @@ export function Pages({ className }: PagesProps) {
         if (inView) visible.add(pageNum);
 
         // Overlap with the actual viewport (no buffer) for current page detection
+        // In dual mode, use 2D area overlap so horizontal scroll within a pair
+        // correctly updates the current page to the neighbor page.
+        const overlapX = Math.max(0, Math.min(er.right, cr.right) - Math.max(er.left, cr.left));
+        const overlapY = Math.max(0, Math.min(er.bottom, cr.bottom) - Math.max(er.top, cr.top));
         let overlap: number;
-        if (scrollMode === 'horizontal') {
-          overlap = Math.max(0, Math.min(er.right, cr.right) - Math.max(er.left, cr.left));
+        if (viewMode === 'dual') {
+          overlap = overlapX * overlapY;
+        } else if (scrollMode === 'horizontal') {
+          overlap = overlapX;
         } else {
-          overlap = Math.max(0, Math.min(er.bottom, cr.bottom) - Math.max(er.top, cr.top));
+          overlap = overlapY;
         }
         if (overlap > bestOverlap) {
           bestOverlap = overlap;
