@@ -29,9 +29,15 @@ export function Page({ pageNumber, className }: PageProps) {
       const context = canvas.getContext('2d');
       if (!context) return;
 
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = viewport.width * dpr;
-      canvas.height = viewport.height * dpr;
+      // Cap canvas pixels to avoid exceeding mobile browser limits (~16M pixels)
+      const MAX_CANVAS_PIXELS = 16_777_216;
+      const baseDpr = window.devicePixelRatio || 1;
+      const basePixels = viewport.width * baseDpr * viewport.height * baseDpr;
+      const dpr = basePixels > MAX_CANVAS_PIXELS
+        ? Math.sqrt(MAX_CANVAS_PIXELS / (viewport.width * viewport.height))
+        : baseDpr;
+      canvas.width = Math.floor(viewport.width * dpr);
+      canvas.height = Math.floor(viewport.height * dpr);
       canvas.style.width = `${viewport.width}px`;
       canvas.style.height = `${viewport.height}px`;
       context.scale(dpr, dpr);

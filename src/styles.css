@@ -525,14 +525,23 @@
   flex-direction: column;
 }
 
-.pdf-viewer__pages--scroll-page > .pdf-viewer__page-wrapper,
-.pdf-viewer__pages--scroll-page > .pdf-viewer__page-pair {
+.pdf-viewer__pages--scroll-page .pdf-viewer__page-wrapper,
+.pdf-viewer__pages--scroll-page .pdf-viewer__page-pair {
   display: none;
 }
 
-.pdf-viewer__pages--scroll-page > .pdf-viewer__page-wrapper--active,
-.pdf-viewer__pages--scroll-page > .pdf-viewer__page-pair--active {
+.pdf-viewer__pages--scroll-page .pdf-viewer__page-wrapper--active,
+.pdf-viewer__pages--scroll-page .pdf-viewer__page-pair--active {
   display: flex;
+}
+
+/* Inner wrapper for pinch-to-zoom transforms (keeps container overflow clipping intact) */
+.pdf-viewer__pages-content {
+  display: flex;
+  flex-direction: inherit;
+  align-items: inherit;
+  gap: inherit;
+  min-height: 100%;
 }
 
 /* View mode: dual (side-by-side pairs) */

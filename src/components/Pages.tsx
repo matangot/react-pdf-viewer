@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { usePdfViewerContext } from '../context';
 import { VIRTUALIZATION_BUFFER } from '../constants';
 import { Page } from './Page';
@@ -10,6 +10,7 @@ export interface PagesProps {
 export function Pages({ className }: PagesProps) {
   const { totalPages, currentPage, _setCurrentPage, zoomMode, zoomLevel, _setZoomLevel, zoomTo, rotation, document: pdfDoc, containerRef: ctxContainerRef, scrollToPageRef, cursorMode, viewMode, scrollMode, isPrinting } = usePdfViewerContext();
   const containerRef = useRef<HTMLDivElement>(null);
+  const pinchContentRef = useRef<HTMLDivElement>(null);
   const visiblePagesRef = useRef<Set<number>>(new Set([1]));
   // Base page dimensions at scale=1 (fetched once from page 1)
   const [baseDims, setBaseDims] = useState<{ width: number; height: number } | null>(null);
@@ -19,6 +20,15 @@ export function Pages({ className }: PagesProps) {
   const pageUpdateRafRef = useRef(0);
   // Only re-render when the set of pages to render actually changes
   const [renderGeneration, setRenderGeneration] = useState(0);
+  // Pending pinch-to-zoom transition (processed in useLayoutEffect after React renders)
+  const pendingZoomRef = useRef<{
+    startZoom: number;
+    lastScale: number;
+    centerX: number;
+    centerY: number;
+    scrollLeft: number;
+    scrollTop: number;
+  } | null>(null);
 
   const computeRenderSet = useCallback((visible: Set<number>): Set<number> => {
     const result = new Set<number>();
@@ -331,9 +341,14 @@ export function Pages({ className }: PagesProps) {
         const clamped = Math.max(0.25, Math.min(4, touchStateRef.current.startZoom * scale));
         const visualScale = clamped / touchStateRef.current.startZoom;
         touchStateRef.current.lastScale = clamped;
-        // CSS transform for instant visual feedback — no re-render
-        container.style.transformOrigin = `${touchStateRef.current.centerX}px ${touchStateRef.current.centerY}px`;
-        container.style.transform = `scale(${visualScale})`;
+        // CSS transform on inner content for instant visual feedback — no re-render.
+        // Using the inner wrapper keeps the container's overflow clipping intact,
+        // so zoom-out doesn't reveal gray areas beyond the content.
+        const content = pinchContentRef.current;
+        if (content) {
+          content.style.transformOrigin = `${touchStateRef.current.centerX + container.scrollLeft}px ${touchStateRef.current.centerY + container.scrollTop}px`;
+          content.style.transform = `scale(${visualScale})`;
+        }
       }
     };
 
@@ -342,29 +357,13 @@ export function Pages({ className }: PagesProps) {
 
       if (touchStateRef.current.isPinching) {
         const { startZoom, lastScale, centerX, centerY, scrollLeft, scrollTop } = touchStateRef.current;
-        // Remove CSS transform
-        container.style.transform = '';
-        container.style.transformOrigin = '';
         touchStateRef.current = null;
 
-        // Calculate scroll position to keep pinch center in same place
-        const zoomRatio = lastScale / startZoom;
-        const contentX = scrollLeft + centerX;
-        const contentY = scrollTop + centerY;
-        const newScrollLeft = contentX * zoomRatio - centerX;
-        const newScrollTop = contentY * zoomRatio - centerY;
-
-        // Temporarily lock scroll tracking during zoom transition
+        // Keep CSS transform as visual bridge until React re-renders at new zoom.
+        // The useLayoutEffect will remove it before the browser paints.
+        pendingZoomRef.current = { startZoom, lastScale, centerX, centerY, scrollLeft, scrollTop };
         navigatingRef.current = true;
         zoomTo(lastScale);
-        // Wait for React to re-render pages at new size, then set scroll
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            container.scrollLeft = Math.max(0, newScrollLeft);
-            container.scrollTop = Math.max(0, newScrollTop);
-            navigatingRef.current = false;
-          });
-        });
         return;
       }
 
@@ -381,6 +380,53 @@ export function Pages({ className }: PagesProps) {
       container.removeEventListener('touchend', handleTouchEnd);
     };
   }, [zoomTo, scrollMode]);
+
+  // After React renders at a new zoom level, finalize pinch-to-zoom transition
+  // and update page visibility — all before the browser paints (no flash / gray gaps).
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    // Finalize pending pinch-to-zoom: remove CSS transform & set scroll position
+    const pending = pendingZoomRef.current;
+    if (pending) {
+      pendingZoomRef.current = null;
+      const content = pinchContentRef.current;
+      if (content) {
+        content.style.transform = '';
+        content.style.transformOrigin = '';
+      }
+
+      const zoomRatio = pending.lastScale / pending.startZoom;
+      const contentX = pending.scrollLeft + pending.centerX;
+      const contentY = pending.scrollTop + pending.centerY;
+      container.scrollLeft = Math.max(0, contentX * zoomRatio - pending.centerX);
+      container.scrollTop = Math.max(0, contentY * zoomRatio - pending.centerY);
+      navigatingRef.current = false;
+    }
+
+    // Immediately update visibility so newly-exposed pages render before paint
+    const cr = container.getBoundingClientRect();
+    const buffer = 200;
+    const visible = new Set<number>();
+    const wrappers = container.querySelectorAll<HTMLElement>(
+      '.pdf-viewer__page-wrapper[data-page-number]'
+    );
+    for (const el of wrappers) {
+      const er = el.getBoundingClientRect();
+      const inView = scrollMode === 'horizontal'
+        ? er.right > cr.left - buffer && er.left < cr.right + buffer
+        : er.bottom > cr.top - buffer && er.top < cr.bottom + buffer;
+      if (inView) visible.add(Number(el.dataset.pageNumber));
+    }
+    visiblePagesRef.current = visible;
+    const newRenderSet = computeRenderSet(visible);
+    const oldRenderSet = lastRenderSetRef.current;
+    if (newRenderSet.size !== oldRenderSet.size || [...newRenderSet].some(p => !oldRenderSet.has(p))) {
+      lastRenderSetRef.current = newRenderSet;
+      setRenderGeneration(g => g + 1);
+    }
+  }, [zoomLevel, computeRenderSet, scrollMode]);
 
   const isPageScroll = scrollMode === 'page';
 
@@ -464,7 +510,9 @@ export function Pages({ className }: PagesProps) {
 
   return (
     <div ref={containerRef} className={classNames} onMouseDown={handleMouseDown}>
-      {renderContent()}
+      <div ref={pinchContentRef} className="pdf-viewer__pages-content">
+        {renderContent()}
+      </div>
     </div>
   );
 }
