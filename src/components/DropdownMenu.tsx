@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, type ReactNode } from 'react';
+import { useState, useRef, useEffect, useCallback, useLayoutEffect, type ReactNode } from 'react';
 import { Check } from '../icons';
 
 export interface DropdownMenuProps {
@@ -13,6 +13,7 @@ export interface DropdownMenuProps {
 export function DropdownMenu({ trigger, children, className, align = 'right', title = 'More actions', triggerClassName }: DropdownMenuProps) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const close = useCallback(() => setOpen(false), []);
 
@@ -34,6 +35,19 @@ export function DropdownMenu({ trigger, children, className, align = 'right', ti
     };
   }, [open, close]);
 
+  useLayoutEffect(() => {
+    if (!open || !contentRef.current) return;
+    const el = contentRef.current;
+    const viewer = el.closest('.pdf-viewer') as HTMLElement | null;
+    if (!viewer) return;
+    const viewerRect = viewer.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    const available = viewerRect.bottom - elRect.top - 32;
+    if (available > 0) {
+      el.style.maxHeight = `${available}px`;
+    }
+  }, [open]);
+
   const classNames = ['pdf-viewer__dropdown', className].filter(Boolean).join(' ');
 
   return (
@@ -50,6 +64,7 @@ export function DropdownMenu({ trigger, children, className, align = 'right', ti
       </button>
       {open && (
         <div
+          ref={contentRef}
           className={`pdf-viewer__dropdown-content pdf-viewer__dropdown-content--${align}`}
           role="menu"
           onClick={close}

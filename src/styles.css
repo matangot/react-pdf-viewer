@@ -647,7 +647,7 @@
   box-shadow: var(--pdf-dropdown-shadow);
   padding: 6px;
   z-index: 50;
-  overflow: hidden;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 2px;
