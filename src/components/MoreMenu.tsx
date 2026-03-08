@@ -13,7 +13,7 @@ import {
   EllipsisVertical,
   Download as DownloadIcon,
   Printer,
-  Maximize,
+  Expand,
 } from '../icons';
 
 export interface MoreMenuProps {
@@ -51,9 +51,10 @@ export function MoreMenu({ className }: MoreMenuProps) {
           onClick={print}
         />
         <DropdownMenuItem
-          icon={<Maximize />}
+          icon={<Expand />}
           label="Full Screen"
           onClick={toggleFullScreen}
+          disabled={!document.fullscreenEnabled}
         />
         <DropdownMenuSeparator />
       </div>

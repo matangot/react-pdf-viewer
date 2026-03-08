@@ -16,6 +16,7 @@ export function FullScreen({ className }: FullScreenProps) {
     <button
       className={classNames}
       onClick={toggleFullScreen}
+      disabled={!document.fullscreenEnabled}
       title="Full screen"
       aria-label="Toggle full screen"
     >
