@@ -116,7 +116,13 @@ export function ThumbnailSidebar({ className }: ThumbnailSidebarProps) {
     }
   }, [currentPage, isThumbnailsOpen]);
 
-  // Re-render when rotation changes
+  // Clear rendered state when sidebar closes (canvases are unmounted) or rotation changes
+  useEffect(() => {
+    if (isThumbnailsOpen) return;
+    setRenderedThumbnails(new Set());
+    renderingPages.current.clear();
+  }, [isThumbnailsOpen]);
+
   useEffect(() => {
     setRenderedThumbnails(new Set());
   }, [rotation]);

@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Fix Ctrl/Cmd+F not opening the search panel — dispatch custom event to open and focus search
 - Disable fullscreen button when Fullscreen API is not available (e.g. iOS browsers)
 - Fix inconsistent fullscreen icon between toolbar and menu
+- Fix sidebar thumbnails going blank when reopening — clear rendered state on close so thumbnails re-render with fresh canvas elements
 
 ## [0.1.6] - 2026-03-08
 
