@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 - Fix document properties modal covering only the component area instead of the full screen
 - Fix dropdown menu getting cut off when the component is shorter than the menu — constrain max-height to available space and scroll
+- Fix Ctrl/Cmd+F not opening the search panel — dispatch custom event to open and focus search
 
 ## [0.1.6] - 2026-03-08
 

@@ -44,8 +44,7 @@ export function useKeyboardShortcuts(
         }
         if (e.key === 'f') {
           e.preventDefault();
-          const searchInput = el.querySelector<HTMLInputElement>('.pdf-viewer__search-input');
-          searchInput?.focus();
+          el.dispatchEvent(new CustomEvent('pdf-viewer:open-search'));
         }
       }
     };

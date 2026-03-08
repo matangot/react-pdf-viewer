@@ -175,12 +175,14 @@ For a completely custom look, skip importing `styles.css` and style from scratch
 |----------|--------|
 | `Arrow Left` / `Page Up` | Previous page |
 | `Arrow Right` / `Page Down` | Next page |
+| `h` | Toggle cursor mode (text select / hand) |
 | `Ctrl/Cmd + =` | Zoom in |
 | `Ctrl/Cmd + -` | Zoom out |
 | `Ctrl/Cmd + 0` | Reset zoom |
-| `Ctrl/Cmd + F` | Focus search |
+| `Ctrl/Cmd + F` | Open search |
 | `Enter` | Next search match |
 | `Shift + Enter` | Previous search match |
+| `Escape` | Close search / modal / menu |
 
 ## Support
 

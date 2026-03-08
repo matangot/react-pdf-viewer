@@ -36,6 +36,18 @@ export function Search({ className }: SearchProps) {
     node?.focus();
   }, []);
 
+  // Open on Ctrl+F (via custom event from keyboard shortcuts)
+  useEffect(() => {
+    const el = panelRef.current?.closest('.pdf-viewer');
+    if (!el) return;
+    const handler = () => {
+      setOpen(true);
+      inputRef.current?.focus();
+    };
+    el.addEventListener('pdf-viewer:open-search', handler);
+    return () => el.removeEventListener('pdf-viewer:open-search', handler);
+  }, []);
+
   // Close on Escape
   useEffect(() => {
     if (!open) return;
