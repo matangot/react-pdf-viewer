@@ -3,6 +3,14 @@ import { usePdfViewerContext } from '../context';
 import { VIRTUALIZATION_BUFFER } from '../constants';
 import { Page } from './Page';
 
+/** Check if any element in `a` is missing from `b` (without allocating an array). */
+function setsdiffer(a: Set<number>, b: Set<number>): boolean {
+  for (const v of a) {
+    if (!b.has(v)) return true;
+  }
+  return false;
+}
+
 export interface PagesProps {
   className?: string;
 }
@@ -100,7 +108,7 @@ export function Pages({ className }: PagesProps) {
       visiblePagesRef.current = visible;
       const newRenderSet = computeRenderSet(visible);
       const oldRenderSet = lastRenderSetRef.current;
-      if (newRenderSet.size !== oldRenderSet.size || [...newRenderSet].some(p => !oldRenderSet.has(p))) {
+      if (newRenderSet.size !== oldRenderSet.size || setsdiffer(newRenderSet, oldRenderSet)) {
         lastRenderSetRef.current = newRenderSet;
         setRenderGeneration(g => g + 1);
       }
@@ -454,7 +462,7 @@ export function Pages({ className }: PagesProps) {
     visiblePagesRef.current = visible;
     const newRenderSet = computeRenderSet(visible);
     const oldRenderSet = lastRenderSetRef.current;
-    if (newRenderSet.size !== oldRenderSet.size || [...newRenderSet].some(p => !oldRenderSet.has(p))) {
+    if (newRenderSet.size !== oldRenderSet.size || setsdiffer(newRenderSet, oldRenderSet)) {
       lastRenderSetRef.current = newRenderSet;
       setRenderGeneration(g => g + 1);
     }

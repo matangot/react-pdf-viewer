@@ -151,7 +151,14 @@ export function PdfViewerProvider({
     setIsThumbnailsOpen((prev) => !prev);
   }, []);
 
+  const searchAbortRef = useRef<AbortController | null>(null);
+
   const search = useCallback(async (query: string) => {
+    // Abort any in-flight search
+    searchAbortRef.current?.abort();
+    const abort = new AbortController();
+    searchAbortRef.current = abort;
+
     setSearchQuery(query);
     if (!query || !document) {
       setSearchMatches([]);
@@ -161,8 +168,11 @@ export function PdfViewerProvider({
 
     const matches: SearchMatch[] = [];
     const lowerQuery = query.toLowerCase();
+    const CHUNK_SIZE = 20;
 
     for (let i = 1; i <= document.numPages; i++) {
+      if (abort.signal.aborted) return;
+
       const page = await document.getPage(i);
       const textContent = await page.getTextContent();
       const pageText = textContent.items
@@ -176,8 +186,14 @@ export function PdfViewerProvider({
         matches.push({ pageIndex: i - 1, matchIndex: matchIdx++ });
         startIndex += lowerQuery.length;
       }
+
+      // Yield to main thread every CHUNK_SIZE pages to avoid blocking UI
+      if (i % CHUNK_SIZE === 0) {
+        await new Promise((r) => setTimeout(r, 0));
+      }
     }
 
+    if (abort.signal.aborted) return;
     setSearchMatches(matches);
     setCurrentMatchIndex(matches.length > 0 ? 0 : -1);
   }, [document]);

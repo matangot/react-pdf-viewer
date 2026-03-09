@@ -1,4 +1,5 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { memo, useEffect, useRef, useCallback } from 'react';
+import { TextLayer } from 'pdfjs-dist';
 import { usePdfViewerContext } from '../context';
 
 export interface PageProps {
@@ -6,7 +7,7 @@ export interface PageProps {
   className?: string;
 }
 
-export function Page({ pageNumber, className }: PageProps) {
+export const Page = memo(function Page({ pageNumber, className }: PageProps) {
   const { document, zoomLevel, rotation, searchQuery, searchMatches, currentMatchIndex } = usePdfViewerContext();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const textLayerRef = useRef<HTMLDivElement>(null);
@@ -61,7 +62,6 @@ export function Page({ pageNumber, className }: PageProps) {
         textLayerDiv.style.setProperty('--scale-factor', String(viewport.scale));
 
         const textContent = await page.getTextContent();
-        const { TextLayer } = await import('pdfjs-dist');
 
         const textLayer = new TextLayer({
           textContentSource: textContent,
@@ -173,4 +173,4 @@ export function Page({ pageNumber, className }: PageProps) {
       <div ref={textLayerRef} className="pdf-viewer__page-text-layer" />
     </div>
   );
-}
+});

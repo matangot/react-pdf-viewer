@@ -17,6 +17,13 @@ All notable changes to this project will be documented in this file.
 
 - Switch CI publish to npm trusted publishing (OIDC) — no more npm tokens
 
+### Performance
+
+- Wrap `Page` component in `React.memo` to prevent unnecessary re-renders when parent updates
+- Hoist `TextLayer` to a static import instead of dynamic `import()` on every page render
+- Replace array spread with iterator in scroll visibility set comparison to avoid allocations on every scroll tick
+- Chunk search across pages and yield to main thread every 20 pages to avoid blocking UI on large documents; abort in-flight search when a new query starts
+
 ## [0.1.8] - 2026-03-09
 
 ### Fixed
