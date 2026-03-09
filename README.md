@@ -1,6 +1,19 @@
-# React PDF Viewer
+<p align="center">
+  <img src="banner.svg" alt="React PDF Viewer" width="100%" />
+</p>
 
-A fast, customizable React PDF viewer component powered by pdf.js. Works with Next.js, Vite, CRA, and any React environment.
+<h1 align="center">React PDF Viewer</h1>
+
+<p align="center">
+  A fast, customizable React PDF viewer component powered by pdf.js.<br/>
+  Works with Next.js, Vite, CRA, and any React environment.
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/@matangot/react-pdf-viewer"><img src="https://img.shields.io/npm/v/@matangot/react-pdf-viewer?color=818cf8&label=npm" alt="npm version" /></a>
+  <a href="https://www.npmjs.com/package/@matangot/react-pdf-viewer"><img src="https://img.shields.io/npm/dm/@matangot/react-pdf-viewer?color=818cf8" alt="npm downloads" /></a>
+  <a href="https://github.com/matangot/react-pdf-viewer/blob/master/LICENSE"><img src="https://img.shields.io/npm/l/@matangot/react-pdf-viewer?color=818cf8" alt="license" /></a>
+</p>
 
 ## Features
 
