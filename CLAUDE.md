@@ -1,2 +1,2 @@
 - Use pnpm, not npm
-- Release: update CHANGELOG.md, bump version in package.json, commit, `git tag vX.Y.Z && git push && git push --tags`
+- Release: update CHANGELOG.md, bump version in package.json, commit, `git tag vX.Y.Z && git push && git push --tags`, create a gh release

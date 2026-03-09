@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.1.8] - 2026-03-09
+
 ### Fixed
 
 - Fix printing on mobile (iOS) — pages were merged onto a single sheet because iframe printing doesn't support page breaks on iOS WebKit; mobile now opens a new window for reliable multi-page printing
