@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix printing on mobile (iOS) — pages were merged onto a single sheet because iframe printing doesn't support page breaks on iOS WebKit; mobile now opens a new window for reliable multi-page printing
+- Fix blank pages when printing for the first time — wait for pdf.js render completion (data-rendered attribute) instead of checking canvas dimensions which resolved before content was painted
+
 ## [0.1.7] - 2026-03-08
 
 ### Fixed

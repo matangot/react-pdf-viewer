@@ -241,65 +241,88 @@ export function PdfViewerProvider({
     if (!document) return;
     const total = document.numPages;
 
+    // On mobile, open print window synchronously (before async work) to avoid popup blocker.
+    // Use a minimal about:blank window — content is written later after canvases render.
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    let printWindow: Window | null = null;
+    if (isMobile) {
+      printWindow = window.open('', '_blank');
+      if (!printWindow) return;
+    }
+
     // Set isPrinting to force all pages to render
     setIsPrinting(true);
 
-    // Wait for all pages to finish rendering their canvases
+    // Wait one frame for React to flush and mount all page canvases
+    await new Promise((r) => requestAnimationFrame(r));
+
+    // Wait for all pages to finish rendering. Each Page component sets
+    // data-rendered="true" on its canvas after pdf.js render completes.
     await new Promise<void>((resolve) => {
       const checkInterval = setInterval(() => {
         const container = containerRef.current;
         if (!container) return;
-        const canvases = container.querySelectorAll('.pdf-viewer__page-canvas');
-        let rendered = 0;
-        canvases.forEach((c) => {
-          const canvas = c as HTMLCanvasElement;
-          if (canvas.width > 0 && canvas.height > 0) rendered++;
-        });
+        const rendered = container.querySelectorAll('.pdf-viewer__page-canvas[data-rendered="true"]').length;
         if (rendered >= total) {
           clearInterval(checkInterval);
           resolve();
         }
       }, 100);
 
-      // Safety timeout after 10s
-      setTimeout(() => { clearInterval(checkInterval); resolve(); }, 10000);
+      // Safety timeout after 30s (more pages need more time)
+      setTimeout(() => { clearInterval(checkInterval); resolve(); }, 30000);
     });
 
-    // Print via hidden iframe to bypass host page layout constraints
     const container = containerRef.current;
-    if (!container) { setIsPrinting(false); return; }
+    if (!container) { printWindow?.close(); setIsPrinting(false); return; }
 
     const canvases = Array.from(container.querySelectorAll('.pdf-viewer__page-canvas')) as HTMLCanvasElement[];
-    const iframe = window.document.createElement('iframe');
-    iframe.style.position = 'fixed';
-    iframe.style.top = '-10000px';
-    iframe.style.left = '-10000px';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    window.document.body.appendChild(iframe);
 
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-    if (!iframeDoc) { setIsPrinting(false); return; }
-
-    iframeDoc.open();
-    iframeDoc.write(`<!DOCTYPE html><html><head><style>
+    const printStyles = `
+      @page { margin: 0; size: auto; }
       * { margin: 0; padding: 0; }
       body { background: white; }
-      img { display: block; width: 100%; height: auto; page-break-after: always; }
-      img:last-child { page-break-after: auto; }
-    </style></head><body></body></html>`);
-    iframeDoc.close();
+      .page { page-break-after: always; break-after: page; }
+      .page:last-child { page-break-after: auto; break-after: auto; }
+      .page img { display: block; width: 100%; height: auto; }
+    `;
 
-    // Convert each canvas to an image in the iframe
+    // Get the target document to write print content into
+    const targetDoc = (() => {
+      if (printWindow) {
+        // Mobile: use the pre-opened window (top-level window handles page breaks correctly)
+        return printWindow.document;
+      }
+      // Desktop: use a hidden iframe to bypass host page layout constraints
+      const iframe = window.document.createElement('iframe');
+      iframe.style.position = 'fixed';
+      iframe.style.top = '-10000px';
+      iframe.style.left = '-10000px';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      window.document.body.appendChild(iframe);
+      return iframe.contentDocument || iframe.contentWindow?.document;
+    })();
+
+    if (!targetDoc) { printWindow?.close(); setIsPrinting(false); return; }
+
+    targetDoc.open();
+    targetDoc.write(`<!DOCTYPE html><html><head><style>${printStyles}</style></head><body></body></html>`);
+    targetDoc.close();
+
+    // Convert each canvas to an image
     for (const canvas of canvases) {
-      const img = iframeDoc.createElement('img');
+      const div = targetDoc.createElement('div');
+      div.className = 'page';
+      const img = targetDoc.createElement('img');
       img.src = canvas.toDataURL('image/png');
-      iframeDoc.body.appendChild(img);
+      div.appendChild(img);
+      targetDoc.body.appendChild(div);
     }
 
     // Wait for images to load, then print
     await new Promise<void>((resolve) => {
-      const imgs = iframeDoc.querySelectorAll('img');
+      const imgs = targetDoc.querySelectorAll('img');
       let loaded = 0;
       const onLoad = () => {
         loaded++;
@@ -311,13 +334,20 @@ export function PdfViewerProvider({
       if (loaded >= imgs.length) resolve();
     });
 
-    iframe.contentWindow?.print();
-
-    // Cleanup after print dialog closes
-    setTimeout(() => {
-      window.document.body.removeChild(iframe);
+    if (printWindow) {
+      // Mobile: print from the new window, then close it
+      printWindow.print();
+      printWindow.close();
       setIsPrinting(false);
-    }, 500);
+    } else {
+      // Desktop: print from iframe, then clean up
+      const iframe = window.document.querySelector('iframe[style*="-10000px"]') as HTMLIFrameElement;
+      iframe?.contentWindow?.print();
+      setTimeout(() => {
+        if (iframe) window.document.body.removeChild(iframe);
+        setIsPrinting(false);
+      }, 500);
+    }
   }, [document]);
 
   const setCursorMode = useCallback((mode: CursorMode) => {

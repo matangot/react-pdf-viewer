@@ -48,8 +48,10 @@ export function Page({ pageNumber, className }: PageProps) {
       });
 
       renderTaskRef.current = renderTask;
+      canvas.removeAttribute('data-rendered');
 
       await renderTask.promise;
+      canvas.setAttribute('data-rendered', 'true');
 
       // Render text layer
       if (textLayerRef.current) {
