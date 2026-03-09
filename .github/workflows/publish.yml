@@ -28,7 +28,10 @@ jobs:
 
       - run: pnpm run build
 
-      - run: npm publish --access public --provenance
+      - name: Publish to npm (trusted publishing)
+        run: |
+          npm config set registry https://registry.npmjs.org/
+          npm publish --access public --provenance
 
       - name: Extract changelog for this version
         id: changelog
