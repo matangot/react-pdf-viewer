@@ -24,21 +24,26 @@ export function PdfViewer(props: PdfViewerProps) {
   return (
     <Root className={className} {...rootProps}>
       <Toolbar>
-        <Navigation />
-        <Separator />
-        <Zoom />
-        <ThumbnailToggle />
-        <div className="pdf-viewer__toolbar-extras">
+        <div className="pdf-viewer__toolbar-section">
+          <Navigation />
           <Separator />
-          <Search />
-          <Separator />
-          <Rotate />
-          <Download />
-          <Print />
-          <FullScreen />
-          <CursorModeToggle />
+          <ThumbnailToggle />
         </div>
-        <MoreMenu />
+        <div className="pdf-viewer__toolbar-section--center">
+          <Zoom />
+        </div>
+        <div className="pdf-viewer__toolbar-section--end">
+          <div className="pdf-viewer__toolbar-extras">
+            <Search />
+            <Separator />
+            <Rotate />
+            <Download />
+            <Print />
+            <FullScreen />
+            <CursorModeToggle />
+          </div>
+          <MoreMenu />
+        </div>
       </Toolbar>
       <div className="pdf-viewer__body">
         <ThumbnailSidebar />

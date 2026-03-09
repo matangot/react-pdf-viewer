@@ -1,5 +1,5 @@
 import { usePdfViewerContext } from '../context';
-import { Minus, Plus, ArrowLeftRight, RectangleVertical } from '../icons';
+import { Minus, Plus, ArrowLeftRight, RectangleVertical, ChevronDown, Scan } from '../icons';
 import { DropdownMenu, DropdownMenuItem, DropdownMenuSeparator } from './DropdownMenu';
 
 export interface ZoomProps {
@@ -32,7 +32,7 @@ export function Zoom({ className }: ZoomProps) {
         <Minus />
       </button>
       <DropdownMenu
-        trigger={<span className="pdf-viewer__zoom-level-text">{displayPercent}</span>}
+        trigger={<span className="pdf-viewer__zoom-level-text">{displayPercent}<ChevronDown width={14} height={14} /></span>}
         triggerClassName="pdf-viewer__zoom-trigger"
         title="Zoom level"
         align="center"
@@ -47,6 +47,12 @@ export function Zoom({ className }: ZoomProps) {
           />
         ))}
         <DropdownMenuSeparator />
+        <DropdownMenuItem
+          icon={<Scan />}
+          label="Actual Size"
+          onClick={() => zoomTo(1)}
+          active={isPresetActive(1)}
+        />
         <DropdownMenuItem
           icon={<ArrowLeftRight />}
           label="Fit Width"

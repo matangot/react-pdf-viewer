@@ -216,14 +216,23 @@
   flex-direction: row;
   align-items: center;
   gap: 2px;
+  flex: 1;
+  min-width: 0;
 }
 
 .pdf-viewer__toolbar-section--center {
-  flex: 1;
+  display: flex;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .pdf-viewer__toolbar-section--end {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
   justify-content: flex-end;
 }
 
@@ -333,6 +342,13 @@
 
 .pdf-viewer__zoom-level-text {
   pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.pdf-viewer__zoom-level-text svg {
+  opacity: 0.6;
 }
 
 /* ========================================

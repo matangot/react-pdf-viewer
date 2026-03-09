@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Add dropdown arrow indicator to zoom percentage button
+- Add "Actual Size" option with icon to zoom dropdown menu
+
+### Fixed
+
+- Center zoom controls in the toolbar on desktop — use three-section layout (left/center/right) so zoom stays perfectly centered regardless of surrounding items
+
+### Changed
+
+- Switch CI publish to npm trusted publishing (OIDC) — no more npm tokens
+
 ## [0.1.8] - 2026-03-09
 
 ### Fixed
