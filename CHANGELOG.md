@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.1.10] - 2026-03-22
+
+### Changed
+
+- Broaden React peer dependency from `>=18.0.0` to `>=16.8.0`, supporting React 16, 17, 18, and 19
+
 ## [0.1.9] - 2026-03-09
 
 ### Added
