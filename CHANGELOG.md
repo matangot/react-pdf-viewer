@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.1.11] - 2026-06-04
+
 ### Fixed
 
 - SSR-safe: load pdf.js lazily instead of at module load, so importing the library no longer crashes under server-side rendering (Next.js, etc.) where browser globals like `DOMMatrix` don't exist. The dynamic import is memoized, so it stays a one-time cost rather than a per-render `import()`.
