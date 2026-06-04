@@ -58,8 +58,9 @@ export const Page = memo(function Page({ pageNumber, className }: PageProps) {
       if (textLayerRef.current) {
         const textLayerDiv = textLayerRef.current;
         textLayerDiv.innerHTML = '';
-        // pdf.js v4 TextLayer uses --scale-factor CSS variable for dimensions
+        // v6 sizes the text layer via --total-scale-factor; older pdf.js used --scale-factor.
         textLayerDiv.style.setProperty('--scale-factor', String(viewport.scale));
+        textLayerDiv.style.setProperty('--total-scale-factor', String(viewport.scale));
 
         const textContent = await page.getTextContent();
 
