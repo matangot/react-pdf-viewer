@@ -362,7 +362,6 @@
 .pdf-viewer__search-panel {
   position: absolute;
   top: calc(100% + 6px);
-  left: 0;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -374,6 +373,14 @@
   box-shadow: var(--pdf-dropdown-shadow);
   z-index: 20;
   white-space: nowrap;
+}
+
+.pdf-viewer__search-panel--align-left {
+  left: 0;
+}
+
+.pdf-viewer__search-panel--align-right {
+  right: 0;
 }
 
 .pdf-viewer__search-input-wrapper {

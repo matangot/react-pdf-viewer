@@ -82,4 +82,59 @@ describe('Search', () => {
     });
     expect(mockContext.nextMatch).toHaveBeenCalled();
   });
+
+  it('anchors the panel to the right when it would overflow the viewer right edge', () => {
+    const rectSpy = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        const base = { top: 0, bottom: 0, y: 0, height: 0, toJSON: () => {} };
+        if (this.classList.contains('pdf-viewer')) {
+          return { ...base, left: 0, right: 600, x: 0, width: 600 } as DOMRect;
+        }
+        if (this.classList.contains('pdf-viewer__search-panel')) {
+          // Left-anchored panel extends past the viewer's right edge (600)
+          return { ...base, left: 500, right: 800, x: 500, width: 300 } as DOMRect;
+        }
+        return { ...base, left: 0, right: 0, x: 0, width: 0 } as DOMRect;
+      });
+
+    const { container } = render(
+      <div className="pdf-viewer">
+        <Search />
+      </div>
+    );
+    fireEvent.click(screen.getByLabelText('Search in document'));
+
+    const panel = container.querySelector('.pdf-viewer__search-panel');
+    expect(panel).toHaveClass('pdf-viewer__search-panel--align-right');
+
+    rectSpy.mockRestore();
+  });
+
+  it('keeps the panel left-anchored when it fits within the viewer', () => {
+    const rectSpy = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        const base = { top: 0, bottom: 0, y: 0, height: 0, toJSON: () => {} };
+        if (this.classList.contains('pdf-viewer')) {
+          return { ...base, left: 0, right: 600, x: 0, width: 600 } as DOMRect;
+        }
+        if (this.classList.contains('pdf-viewer__search-panel')) {
+          return { ...base, left: 0, right: 300, x: 0, width: 300 } as DOMRect;
+        }
+        return { ...base, left: 0, right: 0, x: 0, width: 0 } as DOMRect;
+      });
+
+    const { container } = render(
+      <div className="pdf-viewer">
+        <Search />
+      </div>
+    );
+    fireEvent.click(screen.getByLabelText('Search in document'));
+
+    const panel = container.querySelector('.pdf-viewer__search-panel');
+    expect(panel).toHaveClass('pdf-viewer__search-panel--align-left');
+
+    rectSpy.mockRestore();
+  });
 });

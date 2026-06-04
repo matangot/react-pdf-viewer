@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect, type KeyboardEvent, type ChangeEvent } from 'react';
+import { useState, useCallback, useRef, useEffect, useLayoutEffect, type KeyboardEvent, type ChangeEvent } from 'react';
 import { usePdfViewerContext } from '../context';
 import { SearchIcon, ChevronUp, ChevronDown, X } from '../icons';
 
@@ -18,7 +18,9 @@ export function Search({ className }: SearchProps) {
   } = usePdfViewerContext();
 
   const [open, setOpen] = useState(false);
+  const [align, setAlign] = useState<'left' | 'right'>('left');
   const panelRef = useRef<HTMLDivElement>(null);
+  const searchPanelRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const handleOpen = useCallback(() => {
@@ -35,6 +37,22 @@ export function Search({ className }: SearchProps) {
     inputRef.current = node;
     node?.focus();
   }, []);
+
+  // Flip the panel to anchor on the right when a left-anchored panel would
+  // overflow the viewer's right edge (e.g. search button placed on the right
+  // side of the toolbar). Runs before paint to avoid a visible jump.
+  useLayoutEffect(() => {
+    if (!open) {
+      setAlign('left');
+      return;
+    }
+    const panel = searchPanelRef.current;
+    const viewer = panel?.closest('.pdf-viewer');
+    if (!panel || !viewer) return;
+    const panelRect = panel.getBoundingClientRect();
+    const viewerRect = viewer.getBoundingClientRect();
+    setAlign(panelRect.right > viewerRect.right ? 'right' : 'left');
+  }, [open]);
 
   // Open on Ctrl+F (via custom event from keyboard shortcuts)
   useEffect(() => {
@@ -93,7 +111,10 @@ export function Search({ className }: SearchProps) {
         <SearchIcon />
       </button>
       {open && (
-        <div className="pdf-viewer__search-panel">
+        <div
+          ref={searchPanelRef}
+          className={`pdf-viewer__search-panel pdf-viewer__search-panel--align-${align}`}
+        >
           <div className="pdf-viewer__search-input-wrapper">
             <div className="pdf-viewer__search-input-icon">
               <SearchIcon />
