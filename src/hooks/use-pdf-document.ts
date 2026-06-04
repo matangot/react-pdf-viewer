@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { getDocument, type PDFDocumentProxy } from 'pdfjs-dist';
+import type { PDFDocumentProxy } from 'pdfjs-dist';
+import { loadPdfjs } from '../pdfjs';
 import type { PdfSource, DocumentInfo } from '../types';
 
 export function usePdfDocument(
@@ -31,23 +32,24 @@ export function usePdfDocument(
       objectUrlRef.current = init.url as string;
     }
 
-    const loadingTask = getDocument(init);
+    loadPdfjs()
+      .then(({ getDocument }) => {
+        if (cancelled) return;
+        return getDocument(init).promise.then(async (doc) => {
+          if (cancelled) {
+            doc.destroy();
+            return;
+          }
+          setDocument(doc);
+          setIsLoading(false);
 
-    loadingTask.promise
-      .then(async (doc) => {
-        if (cancelled) {
-          doc.destroy();
-          return;
-        }
-        setDocument(doc);
-        setIsLoading(false);
-
-        const metadata = await doc.getMetadata();
-        const info = metadata.info as Record<string, string> | null;
-        onDocumentLoad?.({
-          numPages: doc.numPages,
-          title: info?.Title,
-          author: info?.Author,
+          const metadata = await doc.getMetadata();
+          const info = metadata.info as Record<string, string> | null;
+          onDocumentLoad?.({
+            numPages: doc.numPages,
+            title: info?.Title,
+            author: info?.Author,
+          });
         });
       })
       .catch((err) => {

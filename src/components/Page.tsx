@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef, useCallback } from 'react';
-import { TextLayer } from 'pdfjs-dist';
+import { loadPdfjs } from '../pdfjs';
 import { usePdfViewerContext } from '../context';
 
 export interface PageProps {
@@ -63,6 +63,7 @@ export const Page = memo(function Page({ pageNumber, className }: PageProps) {
 
         const textContent = await page.getTextContent();
 
+        const { TextLayer } = await loadPdfjs();
         const textLayer = new TextLayer({
           textContentSource: textContent,
           container: textLayerDiv,
