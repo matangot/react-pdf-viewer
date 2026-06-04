@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 - SSR-safe: load pdf.js lazily instead of at module load, so importing the library no longer crashes under server-side rendering (Next.js, etc.) where browser globals like `DOMMatrix` don't exist. The dynamic import is memoized, so it stays a one-time cost rather than a per-render `import()`.
 - Text selection/highlight now aligns with the rendered glyphs on pdf.js v6. v6 drives text-layer span sizing from per-span `--font-height` / `--scale-x` variables; the stylesheet now applies them (`font-size: calc(var(--total-scale-factor) * var(--font-height))` and `transform: scaleX(var(--scale-x))`), and `--total-scale-factor` is set on the text layer.
+- Search popover no longer clips at the toolbar's right edge — it now stays within the viewport when the search control is positioned on the right.
 
 ## [0.1.10] - 2026-03-22
 
