@@ -626,6 +626,9 @@
   white-space: pre;
   cursor: text;
   transform-origin: 0% 0%;
+  /* --font-height / --scale-x are set per span by pdf.js v6. */
+  font-size: calc(var(--total-scale-factor, 1) * var(--font-height, 0));
+  transform: scaleX(var(--scale-x, 1));
 }
 
 .pdf-viewer__page-text-layer span::selection {
